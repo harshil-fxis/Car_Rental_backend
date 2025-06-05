@@ -1,7 +1,12 @@
+import 'dart:convert';
+
+import 'package:car_rental/Screen/bottom_navbar_page.dart';
+import 'package:car_rental/Screen/global_state.dart';
 import 'package:car_rental/Screen/reset_password_page.dart';
 import 'package:car_rental/Screen/signup_page.dart';
 import 'package:car_rental/Screen/verify_phone_page.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,6 +18,49 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   bool passwordVisible = false;
   bool? isChecked = false;
+
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  
+  late int? userId;
+  Future<void> loginData() async{
+    try{
+      final response = await http.post(Uri.parse("https://f82d-103-173-21-78.ngrok-free.app/login"),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(
+          {
+            'email': emailController.text.trim(),
+            'password': passwordController.text.trim(),
+          }
+        ),
+      );
+      print("Status code: ${response.statusCode}");
+      print("Body: ${response.body}");
+      if(response.statusCode == 200){
+        final data = json.decode(response.body);
+        userId = data['user'];
+        AppState.userId.value = data['user'].toString();
+        print("gloable id: ${AppState.userId.value}");
+        print("login user id: ${userId}");
+        showmessage("Account Successfully Created !");
+        Navigator.push(context, MaterialPageRoute(builder: (context) => VerifyPhonePage()));
+      }else{
+        showmessage("Please enter valid email and password !");
+        print("error");
+      }
+    }catch(e){
+      print(e.toString());
+    }
+  }
+  void showmessage(message){
+    var snackBar = SnackBar(content: Text(message));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,6 +91,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: SizedBox(
                       height: 45,
                       child: TextField(
+                        controller: emailController,
                         decoration: InputDecoration(
                           hintText: "  Email/Phone Number",
                           hintStyle: TextStyle(fontSize: 14,color: Colors.grey),
@@ -61,6 +110,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: SizedBox(
                       height: 45,
                       child: TextField(
+                        controller: passwordController,
                         obscureText: passwordVisible,
                         decoration: InputDecoration(
                           hintText: "  Password",
@@ -113,9 +163,11 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   SizedBox(height: 10,),
                   InkWell(
-                    onTap: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => VerifyPhonePage()));
-                    },
+                    onTap: loginData,
+                    // onTap: (){
+                    //   // Navigator.push(context, MaterialPageRoute(builder: (context) => VerifyPhonePage()));
+                    //   loginData(emailController.text.toString(), passwordController.text.toString());
+                    // },
                     child: Container(
                       width: double.infinity,
                       height: 50,

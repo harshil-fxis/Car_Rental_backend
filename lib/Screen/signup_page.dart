@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:ffi';
 import 'package:car_rental/Screen/login_page.dart';
 import 'package:flutter/material.dart';
+import 'package:car_rental/Screen/global_state.dart';
+import 'package:http/http.dart' as http;
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -11,8 +15,45 @@ class SignupPage extends StatefulWidget {
 class _SignupPageState extends State<SignupPage> {
   bool passwordVisible = false;
   bool? isChecked = false;
+  String message = "";
+
+  final TextEditingController nameController = TextEditingController();
+    final TextEditingController emailController = TextEditingController();
+    final TextEditingController countryController = TextEditingController();
+    final TextEditingController passwordController = TextEditingController();
+    late int userId;
+    Future<void> signupUser() async{
+    final String url ='https://f82d-103-173-21-78.ngrok-free.app/signup';
+    final response = await http.post(
+      Uri.parse(url),
+      headers : {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "name": nameController.text.trim(),
+        "email": emailController.text.trim(),
+        "password": passwordController.text.trim(),
+        "country": countryController.text.trim(),
+      })
+    );
+    if(response.statusCode == 200){
+      final data = jsonDecode(response.body);
+      userId = data['user'];
+      AppState.userId.value = data['user'].toString();
+      print("gloable id: ${AppState.userId.value}");
+      print("User id: ${userId}");
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
+      // final data = jsonDecode(response.body);
+      // setState(() {
+      //   message = data['message'];
+      // });
+    }else{
+      setState(() {
+        message = "signup failed: ${response.body}";
+      });
+    }
+  }
+  
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) {    
     return Scaffold(
       body: Container(
           decoration: BoxDecoration(color: Colors.grey[100]),
@@ -41,6 +82,7 @@ class _SignupPageState extends State<SignupPage> {
                       child: SizedBox(
                         height: 45,
                         child: TextField(
+                          controller: nameController,
                           decoration: InputDecoration(
                             hintText: "  Full Name",
                             hintStyle: TextStyle(fontSize: 14,color: Colors.grey),
@@ -59,6 +101,7 @@ class _SignupPageState extends State<SignupPage> {
                       child: SizedBox(
                         height: 45,
                         child: TextField(
+                          controller: emailController,
                           decoration: InputDecoration(
                             hintText: "  Email/ Address",
                             hintStyle: TextStyle(fontSize: 14,color: Colors.grey),
@@ -77,6 +120,7 @@ class _SignupPageState extends State<SignupPage> {
                       child: SizedBox(
                         height: 45,
                         child: TextField(
+                          controller: passwordController,
                           obscureText: passwordVisible,
                           decoration: InputDecoration(
                             hintText: "  Password",
@@ -103,6 +147,7 @@ class _SignupPageState extends State<SignupPage> {
                       child: SizedBox(
                         height: 45,
                         child: TextField(
+                          controller: countryController,
                           decoration: InputDecoration(
                             hintText: "  Contry",
                             hintStyle: TextStyle(fontSize: 14,color: Colors.grey),
@@ -116,16 +161,19 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                     ),
                     SizedBox(height: 18,),
-                    Container(
-                      width: double.infinity,
-                      height: 50,
-                      margin: EdgeInsets.only(left: 20,right: 20),
-                      padding: EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[900],
-                        borderRadius: BorderRadius.circular(30)
+                    InkWell(
+                      onTap: signupUser,
+                      child: Container(
+                        width: double.infinity,
+                        height: 50,
+                        margin: EdgeInsets.only(left: 20,right: 20),
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[900],
+                          borderRadius: BorderRadius.circular(30)
+                        ),
+                        child: Center(child: Text("Sign up",style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold,color: Colors.white),)),
                       ),
-                      child: Center(child: Text("Sign up",style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold,color: Colors.white),)),
                     ),
                     SizedBox(height: 17,),
                     InkWell(

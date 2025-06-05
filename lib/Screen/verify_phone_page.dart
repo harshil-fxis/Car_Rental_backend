@@ -1,5 +1,10 @@
+import 'dart:convert';
+
+import 'package:car_rental/Controller/car_list_controller.dart';
+import 'package:car_rental/Screen/global_state.dart';
 import 'package:car_rental/Screen/verification_code_page.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class VerifyPhonePage extends StatefulWidget {
   const VerifyPhonePage({super.key});
@@ -8,24 +13,99 @@ class VerifyPhonePage extends StatefulWidget {
   State<VerifyPhonePage> createState() => _VerifyPhonePageState();
 }
 
-class Country{
-  final String name;
-  final String flagUrl;
-  Country({required this.name,required this.flagUrl});
-}
+// class Country{
+//   final String name;
+//   final String flagUrl;
+//   Country({required this.name,required this.flagUrl});
+// }
 
 class _VerifyPhonePageState extends State<VerifyPhonePage> {
- 
-  final List<Country> countries = [
-    Country(name: "United States", flagUrl: "images/countries/united-states.png"),
-    Country(name: "India", flagUrl: "images/countries/flag.png"),
-    Country(name: "Germany", flagUrl: "images/countries/germany.png"),
-  ];
+  String? selectedCountri;
 
-  Country? selectedCountry;
+  final Map<String, String> countryFlags ={
+    'india' : 'images/countries/flag.png',
+    'United State' : 'images/countries/united-states.png'
+  };
+
+  void _navigatetoSearch(){
+    if(selectedCountri != null && carDataByCountry.containsKey(selectedCountri));
+    final brands = carDataByCountry[selectedCountri!]!;
+    final flagUri = countryFlags[selectedCountri!]!;
+  }
+
+  void _navigatetoOtpPage(){
+    if (selectedCountri != null){
+      print("phone id 1: ${userId}");
+      Navigator.push(context, MaterialPageRoute(builder: (context) => VerificationCodePage()));
+    }
+    else{
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please Select a Country")),);
+    }
+  }
+ 
+
+
+  // final List<Country> countries = [
+  //   Country(name: "United States", flagUrl: "images/countries/united-states.png"),
+  //   Country(name: "India", flagUrl: "images/countries/flag.png"),
+  //   Country(name: "Germany", flagUrl: "images/countries/germany.png"),
+  // ];
+
+  // Country? selectedCountry;
+
+  // late String? userId;
+  // @override
+  // void initState(){
+  //   super.initState();
+  //   WidgetsBinding.instance.addPostFrameCallback((_){
+  //     setState(() {
+  //       userId = AppState.userId.value ?? '';
+  //     });
+  //   });
+  // }
+
+  
+  final userId = AppState.userId.value;
+  TextEditingController phoneController = TextEditingController();
+  Future<void> sendOTP() async{
+    try{
+      final response = await http.post(Uri.parse("https://f82d-103-173-21-78.ngrok-free.app/phone"),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(
+          {
+            'id': userId.toString(),
+            'phone': phoneController.text.trim(),
+          }
+        ),
+      );
+      print("phonr id: ${userId}"); 
+      print("Status code: ${response.statusCode}");
+      print("Body: ${response.body}");
+      if(response.statusCode == 200){
+        // final data = json.decode(response.body);
+        // showmessage("Account Successfully Created !");
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => VerificationCodePage()));
+        _navigatetoOtpPage();
+      }else{
+        showmessage("Please enter valid email and password !");
+        print("error");
+      }
+    }catch(e){
+      print(e.toString());
+    }
+  }
+  void showmessage(message){
+    var snackBar = SnackBar(content: Text(message));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final countryList = countryFlags.keys.toList();
+
     return Scaffold(
       body: Container(
         color: Colors.grey[50],
@@ -70,28 +150,33 @@ class _VerifyPhonePageState extends State<VerifyPhonePage> {
                       width: double.infinity,
                       child: Container(
                         width: 300,
-                        child: DropdownButton<Country>(
-                            value: selectedCountry,
-                            icon: Image.asset("images/icon-logo/Group 568.png",height: 15,),
-                            onChanged: (Country? newValue) {
-                              setState(() {
-                                selectedCountry = newValue;
-                              }
+                        child: DropdownButton<String>(
+                          hint: Text("Select Country"),
+                          value: selectedCountri,
+                          icon: Image.asset("images/icon-logo/Group 568.png",height: 15,),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedCountri = value!;
+                              AppState.selectedCountri.value = value;
+                              AppState.flagUrl.value = countryFlags[value]!;
+                              print("selected Country: $value");
+                            }
                             );
                           },
-                          items: countries.map((Country country) {
-                            return DropdownMenuItem<Country>(
+                          items: countryList.map((country) {
+                            final flag = countryFlags[country]!;
+                            return DropdownMenuItem<String>(
                               value: country,
                               child: Row(
                                 children: [
                                   Image.asset(
-                                    country.flagUrl,
+                                    flag,
                                     width: 24,
                                     height: 16,
                                     fit: BoxFit.cover,
                                   ),
                                   SizedBox(width: 40),
-                                  Text(country.name),
+                                  Text(country),
                                   SizedBox(width: 120),
                                 ],
                               ),
@@ -108,6 +193,7 @@ class _VerifyPhonePageState extends State<VerifyPhonePage> {
                     child: SizedBox(
                       height: 45,
                       child: TextField(
+                        controller: phoneController,
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
                           hintText: "  Phone Number",
@@ -123,9 +209,7 @@ class _VerifyPhonePageState extends State<VerifyPhonePage> {
                   ),
                   SizedBox(height: 30,),
                   InkWell(
-                    onTap: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => VerificationCodePage()));
-                    },
+                    onTap: sendOTP,
                     child: Container(
                       width: double.infinity,
                       height: 50,
