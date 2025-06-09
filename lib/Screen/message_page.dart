@@ -1,5 +1,9 @@
+import 'package:car_rental/Controller/owner_list_controller.dart';
+import 'package:car_rental/Model/car_model.dart';
+import 'package:car_rental/Model/owner_list_model.dart';
 import 'package:car_rental/Screen/car_detail_page.dart';
 import 'package:car_rental/Screen/chat_section_page.dart';
+import 'package:car_rental/Screen/global_state.dart';
 import 'package:flutter/material.dart';
 
 class MessagePage extends StatefulWidget {
@@ -10,12 +14,33 @@ class MessagePage extends StatefulWidget {
 }
 
 class _MessagePageState extends State<MessagePage> {
+  late String selectedCountri;
+  late List<OwnerList> ownerList;
+  List<OwnerList> sortedOwner = [];
+
+  @override
+  void initState(){
+    super.initState();
+    selectedCountri = AppState.selectedCountri.value ?? '';
+    ownerList = carOwnerByCountry[selectedCountri] ?? [];
+
+    // List<OwnerList> allOwners = [];
+    // for(var owner in ownerList){
+    //   allOwners.addAll(owner.chats);
+    // }
+  }
+
+
+
+
+
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
+    return Scaffold(
         backgroundColor: Colors.grey[100],
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           toolbarHeight: 100,
           backgroundColor: Colors.grey[100],
           title: Padding(
@@ -28,7 +53,7 @@ class _MessagePageState extends State<MessagePage> {
                   Row(
                     children: [
                       InkWell(onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => CarDetailPage(cars: null,)));
+                    // Navigator.push(context, MaterialPageRoute(builder: (context) => CarDetailPage(car: ,)));
                   }, 
                   child: Image.asset("images/icon-logo/Group 197.png",height: 40,)),
                   SizedBox(width: 10,),
@@ -225,18 +250,21 @@ class _MessagePageState extends State<MessagePage> {
               ),
               SizedBox(height: 20,),
               Expanded(
-                child: ListView(
-                  children: [
-                    Padding(
+                child: ListView.builder(
+                  scrollDirection: Axis.vertical,
+                  itemCount: ownerList.length,
+                  itemBuilder: (context, index){
+                    final owner = ownerList[index];
+                    return Padding(
                       padding: const EdgeInsets.only(bottom: 15.0),
                       child: InkWell(
                         onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => ChatSectionPage()));
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => ChatSectionPage(owner: owner)));
                         },
                         child: Container(
                           height: 65,
                           width: double.infinity,
-                          color: Colors.white,
+                          color:owner.unread == 0 ? Colors.grey.shade100: Colors.white,
                           child: Padding(
                             padding: const EdgeInsets.only(left: 20,right: 20),
                             child: Row(
@@ -245,7 +273,7 @@ class _MessagePageState extends State<MessagePage> {
                                 Row(
                                   children: [
                                     Stack(children: [
-                                      Image.asset("images/icon-logo/user1.png",height: 50,),
+                                      Image.asset(owner.image,height: 50,),
                                       Positioned(
                                         right: 4,
                                         bottom: 2,
@@ -253,7 +281,7 @@ class _MessagePageState extends State<MessagePage> {
                                               height: 10,
                                               width: 10,
                                               decoration: BoxDecoration(
-                                                color: Colors.green,
+                                                color: owner.active == true ? Colors.green : Colors.transparent,
                                                 borderRadius: BorderRadius.circular(10),
                                               ),
                                             ),
@@ -264,9 +292,9 @@ class _MessagePageState extends State<MessagePage> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        Text("Hela Quintin",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
+                                        Text(owner.name,style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
                                         SizedBox(height: 5,),
-                                        Text("Your car is on way! It will arrive......",style: TextStyle(fontSize: 12,),),
+                                        Text(owner.chats.isNotEmpty ? owner.chats.first.message : "No message",style: TextStyle(fontSize: 12,),),
                                       ],
                                     ),
                                   ],
@@ -281,11 +309,11 @@ class _MessagePageState extends State<MessagePage> {
                                           width: 18,
                                           decoration: BoxDecoration(
                                             borderRadius: BorderRadius.circular(10),
-                                            color: Colors.blue,
+                                            color:owner.unread == 0 ? Colors.transparent : Colors.blue,
                                           ),
-                                          child: Center(child: Text("2",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w700,color: Colors.white),)),
+                                          child: Center(child: Text(owner.unread == 0 ? "" : '${owner.unread}' ,style: TextStyle(fontSize: 12,fontWeight: FontWeight.w700,color: Colors.white),)),
                                         ),
-                                        Text("09:20 am",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Colors.grey),)
+                                        Text(owner.chats.isNotEmpty ? owner.chats.first.time : "",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Colors.grey),)
                                       ],
                                     )
                                   ],
@@ -295,274 +323,347 @@ class _MessagePageState extends State<MessagePage> {
                           ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 15.0),
-                      child: Container(
-                        height: 65,
-                        width: double.infinity,
-                        color: Colors.white,
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 20,right: 20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Stack(children: [
-                                    Image.asset("images/icon-logo/Oval.png",height: 50,),
-                                    Positioned(
-                                      right: 4,
-                                      bottom: 2,
-                                      child: Container(
-                                            height: 10,
-                                            width: 10,
-                                            decoration: BoxDecoration(
-                                              color: Colors.green,
-                                              borderRadius: BorderRadius.circular(10),
-                                            ),
-                                          ),
-                                    ),
-                                  ] ),
-                                  SizedBox(width: 10,),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text("Cameron",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
-                                      SizedBox(height: 5,),
-                                      Text("Ok, thanks!",style: TextStyle(fontSize: 12,),),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                   Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                        height: 18,
-                                        width: 18,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(10),
-                                          color: Colors.blue,
-                                        ),
-                                        child: Center(child: Text("1",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w700,color: Colors.white),)),
-                                      ),
-                                      Text("09:20 am",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Colors.grey),)
-                                    ],
-                                  )
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 15.0),
-                      child: Container(
-                        height: 65,
-                        width: double.infinity,
-                        color: Colors.grey[100],
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 20,right: 20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Stack(children: [
-                                    Image.asset("images/icon-logo/Oval (1).png",height: 50,),
-                                    Positioned(
-                                      right: 4,
-                                      bottom: 2,
-                                      child: Container(
-                                            height: 10,
-                                            width: 10,
-                                            decoration: BoxDecoration(
-                                              color: Colors.green,
-                                              borderRadius: BorderRadius.circular(10),
-                                            ),
-                                          ),
-                                    ),
-                                  ] ),
-                                  SizedBox(width: 10,),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text("Mr. Davit",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
-                                      SizedBox(height: 5,),
-                                      Text("Thank you for booking with us!.....",style: TextStyle(color: Colors.grey,fontSize: 12,),),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                   Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text("08:30 am",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Colors.grey),)
-                                    ],
-                                  )
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 15.0),
-                      child: Container(
-                        height: 65,
-                        width: double.infinity,
-                        color: Colors.grey[100],
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 20,right: 20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Stack(children: [
-                                    Image.asset("images/icon-logo/Oval (2).png",height: 50,),
-                                  ] ),
-                                  SizedBox(width: 10,),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text("Richard",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
-                                      SizedBox(height: 5,),
-                                      Text("You: A voice message",style: TextStyle(color: Colors.grey,fontSize: 12,),),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                   Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text("07:32 am",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Colors.grey),)
-                                    ],
-                                  )
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 15.0),
-                      child: Container(
-                        height: 65,
-                        width: double.infinity,
-                        color: Colors.grey[100],
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 20,right: 20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Stack(children: [
-                                    Image.asset("images/icon-logo/Oval (3).png",height: 50,),
-                                  ] ),
-                                  SizedBox(width: 10,),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text("Maichel",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
-                                      SizedBox(height: 5,),
-                                      Text("You: It was an amazing and smooth.....",style: TextStyle(color: Colors.grey,fontSize: 12,),),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                   Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text("Yesterday",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Colors.grey),)
-                                    ],
-                                  )
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 15.0),
-                      child: Container(
-                        height: 65,
-                        width: double.infinity,
-                        color: Colors.grey[100],
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 20,right: 20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Stack(children: [
-                                    Image.asset("images/icon-logo/Oval (4).png",height: 50,),
-                                    Positioned(
-                                      right: 4,
-                                      bottom: 2,
-                                      child: Container(
-                                            height: 10,
-                                            width: 10,
-                                            decoration: BoxDecoration(
-                                              color: Colors.green,
-                                              borderRadius: BorderRadius.circular(10),
-                                            ),
-                                          ),
-                                    ),
-                                  ] ),
-                                  SizedBox(width: 10,),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text("Anna",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
-                                      SizedBox(height: 5,),
-                                      Text("It's Ok, thankyou",style: TextStyle(color: Colors.grey,fontSize: 12,),),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                   Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text("Yesterday",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Colors.grey),)
-                                    ],
-                                  )
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                    );
+                  },
+
+                  // children: [
+
+                    // Padding(
+                    //   padding: const EdgeInsets.only(bottom: 15.0),
+                    //   child: InkWell(
+                    //     onTap: () {
+                    //       Navigator.push(context, MaterialPageRoute(builder: (context) => ChatSectionPage()));
+                    //     },
+                    //     child: Container(
+                    //       height: 65,
+                    //       width: double.infinity,
+                    //       color: Colors.white,
+                    //       child: Padding(
+                    //         padding: const EdgeInsets.only(left: 20,right: 20),
+                    //         child: Row(
+                    //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //           children: [
+                    //             Row(
+                    //               children: [
+                    //                 Stack(children: [
+                    //                   Image.asset("images/icon-logo/user1.png",height: 50,),
+                    //                   Positioned(
+                    //                     right: 4,
+                    //                     bottom: 2,
+                    //                     child: Container(
+                    //                           height: 10,
+                    //                           width: 10,
+                    //                           decoration: BoxDecoration(
+                    //                             color: Colors.green,
+                    //                             borderRadius: BorderRadius.circular(10),
+                    //                           ),
+                    //                         ),
+                    //                   ),
+                    //                 ] ),
+                    //                 SizedBox(width: 10,),
+                    //                 Column(
+                    //                   crossAxisAlignment: CrossAxisAlignment.start,
+                    //                   mainAxisAlignment: MainAxisAlignment.center,
+                    //                   children: [
+                    //                     Text("Hela Quintin",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
+                    //                     SizedBox(height: 5,),
+                    //                     Text("Your car is on way! It will arrive......",style: TextStyle(fontSize: 12,),),
+                    //                   ],
+                    //                 ),
+                    //               ],
+                    //             ),
+                    //             Row(
+                    //               children: [
+                    //                  Column(
+                    //                   mainAxisAlignment: MainAxisAlignment.center,
+                    //                   children: [
+                    //                     Container(
+                    //                       height: 18,
+                    //                       width: 18,
+                    //                       decoration: BoxDecoration(
+                    //                         borderRadius: BorderRadius.circular(10),
+                    //                         color: Colors.blue,
+                    //                       ),
+                    //                       child: Center(child: Text("2",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w700,color: Colors.white),)),
+                    //                     ),
+                    //                     Text("09:20 am",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Colors.grey),)
+                    //                   ],
+                    //                 )
+                    //               ],
+                    //             )
+                    //           ],
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
+                    // Padding(
+                    //   padding: const EdgeInsets.only(bottom: 15.0),
+                    //   child: Container(
+                    //     height: 65,
+                    //     width: double.infinity,
+                    //     color: Colors.white,
+                    //     child: Padding(
+                    //       padding: const EdgeInsets.only(left: 20,right: 20),
+                    //       child: Row(
+                    //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //         children: [
+                    //           Row(
+                    //             children: [
+                    //               Stack(children: [
+                    //                 Image.asset("images/icon-logo/Oval.png",height: 50,),
+                    //                 Positioned(
+                    //                   right: 4,
+                    //                   bottom: 2,
+                    //                   child: Container(
+                    //                         height: 10,
+                    //                         width: 10,
+                    //                         decoration: BoxDecoration(
+                    //                           color: Colors.green,
+                    //                           borderRadius: BorderRadius.circular(10),
+                    //                         ),
+                    //                       ),
+                    //                 ),
+                    //               ] ),
+                    //               SizedBox(width: 10,),
+                    //               Column(
+                    //                 crossAxisAlignment: CrossAxisAlignment.start,
+                    //                 mainAxisAlignment: MainAxisAlignment.center,
+                    //                 children: [
+                    //                   Text("Cameron",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
+                    //                   SizedBox(height: 5,),
+                    //                   Text("Ok, thanks!",style: TextStyle(fontSize: 12,),),
+                    //                 ],
+                    //               ),
+                    //             ],
+                    //           ),
+                    //           Row(
+                    //             children: [
+                    //                Column(
+                    //                 mainAxisAlignment: MainAxisAlignment.center,
+                    //                 children: [
+                    //                   Container(
+                    //                     height: 18,
+                    //                     width: 18,
+                    //                     decoration: BoxDecoration(
+                    //                       borderRadius: BorderRadius.circular(10),
+                    //                       color: Colors.blue,
+                    //                     ),
+                    //                     child: Center(child: Text("1",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w700,color: Colors.white),)),
+                    //                   ),
+                    //                   Text("09:20 am",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Colors.grey),)
+                    //                 ],
+                    //               )
+                    //             ],
+                    //           )
+                    //         ],
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
+                    // Padding(
+                    //   padding: const EdgeInsets.only(bottom: 15.0),
+                    //   child: Container(
+                    //     height: 65,
+                    //     width: double.infinity,
+                    //     color: Colors.grey[100],
+                    //     child: Padding(
+                    //       padding: const EdgeInsets.only(left: 20,right: 20),
+                    //       child: Row(
+                    //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //         children: [
+                    //           Row(
+                    //             children: [
+                    //               Stack(children: [
+                    //                 Image.asset("images/icon-logo/Oval (1).png",height: 50,),
+                    //                 Positioned(
+                    //                   right: 4,
+                    //                   bottom: 2,
+                    //                   child: Container(
+                    //                         height: 10,
+                    //                         width: 10,
+                    //                         decoration: BoxDecoration(
+                    //                           color: Colors.green,
+                    //                           borderRadius: BorderRadius.circular(10),
+                    //                         ),
+                    //                       ),
+                    //                 ),
+                    //               ] ),
+                    //               SizedBox(width: 10,),
+                    //               Column(
+                    //                 crossAxisAlignment: CrossAxisAlignment.start,
+                    //                 mainAxisAlignment: MainAxisAlignment.center,
+                    //                 children: [
+                    //                   Text("Mr. Davit",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
+                    //                   SizedBox(height: 5,),
+                    //                   Text("Thank you for booking with us!.....",style: TextStyle(color: Colors.grey,fontSize: 12,),),
+                    //                 ],
+                    //               ),
+                    //             ],
+                    //           ),
+                    //           Row(
+                    //             children: [
+                    //                Column(
+                    //                 mainAxisAlignment: MainAxisAlignment.center,
+                    //                 children: [
+                    //                   Text("08:30 am",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Colors.grey),)
+                    //                 ],
+                    //               )
+                    //             ],
+                    //           )
+                    //         ],
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
+                    // Padding(
+                    //   padding: const EdgeInsets.only(bottom: 15.0),
+                    //   child: Container(
+                    //     height: 65,
+                    //     width: double.infinity,
+                    //     color: Colors.grey[100],
+                    //     child: Padding(
+                    //       padding: const EdgeInsets.only(left: 20,right: 20),
+                    //       child: Row(
+                    //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //         children: [
+                    //           Row(
+                    //             children: [
+                    //               Stack(children: [
+                    //                 Image.asset("images/icon-logo/Oval (2).png",height: 50,),
+                    //               ] ),
+                    //               SizedBox(width: 10,),
+                    //               Column(
+                    //                 crossAxisAlignment: CrossAxisAlignment.start,
+                    //                 mainAxisAlignment: MainAxisAlignment.center,
+                    //                 children: [
+                    //                   Text("Richard",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
+                    //                   SizedBox(height: 5,),
+                    //                   Text("You: A voice message",style: TextStyle(color: Colors.grey,fontSize: 12,),),
+                    //                 ],
+                    //               ),
+                    //             ],
+                    //           ),
+                    //           Row(
+                    //             children: [
+                    //                Column(
+                    //                 mainAxisAlignment: MainAxisAlignment.center,
+                    //                 children: [
+                    //                   Text("07:32 am",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Colors.grey),)
+                    //                 ],
+                    //               )
+                    //             ],
+                    //           )
+                    //         ],
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
+                    // Padding(
+                    //   padding: const EdgeInsets.only(bottom: 15.0),
+                    //   child: Container(
+                    //     height: 65,
+                    //     width: double.infinity,
+                    //     color: Colors.grey[100],
+                    //     child: Padding(
+                    //       padding: const EdgeInsets.only(left: 20,right: 20),
+                    //       child: Row(
+                    //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //         children: [
+                    //           Row(
+                    //             children: [
+                    //               Stack(children: [
+                    //                 Image.asset("images/icon-logo/Oval (3).png",height: 50,),
+                    //               ] ),
+                    //               SizedBox(width: 10,),
+                    //               Column(
+                    //                 crossAxisAlignment: CrossAxisAlignment.start,
+                    //                 mainAxisAlignment: MainAxisAlignment.center,
+                    //                 children: [
+                    //                   Text("Maichel",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
+                    //                   SizedBox(height: 5,),
+                    //                   Text("You: It was an amazing and smooth.....",style: TextStyle(color: Colors.grey,fontSize: 12,),),
+                    //                 ],
+                    //               ),
+                    //             ],
+                    //           ),
+                    //           Row(
+                    //             children: [
+                    //                Column(
+                    //                 mainAxisAlignment: MainAxisAlignment.center,
+                    //                 children: [
+                    //                   Text("Yesterday",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Colors.grey),)
+                    //                 ],
+                    //               )
+                    //             ],
+                    //           )
+                    //         ],
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
+                    // Padding(
+                    //   padding: const EdgeInsets.only(bottom: 15.0),
+                    //   child: Container(
+                    //     height: 65,
+                    //     width: double.infinity,
+                    //     color: Colors.grey[100],
+                    //     child: Padding(
+                    //       padding: const EdgeInsets.only(left: 20,right: 20),
+                    //       child: Row(
+                    //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //         children: [
+                    //           Row(
+                    //             children: [
+                    //               Stack(children: [
+                    //                 Image.asset("images/icon-logo/Oval (4).png",height: 50,),
+                    //                 Positioned(
+                    //                   right: 4,
+                    //                   bottom: 2,
+                    //                   child: Container(
+                    //                         height: 10,
+                    //                         width: 10,
+                    //                         decoration: BoxDecoration(
+                    //                           color: Colors.green,
+                    //                           borderRadius: BorderRadius.circular(10),
+                    //                         ),
+                    //                       ),
+                    //                 ),
+                    //               ] ),
+                    //               SizedBox(width: 10,),
+                    //               Column(
+                    //                 crossAxisAlignment: CrossAxisAlignment.start,
+                    //                 mainAxisAlignment: MainAxisAlignment.center,
+                    //                 children: [
+                    //                   Text("Anna",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
+                    //                   SizedBox(height: 5,),
+                    //                   Text("It's Ok, thankyou",style: TextStyle(color: Colors.grey,fontSize: 12,),),
+                    //                 ],
+                    //               ),
+                    //             ],
+                    //           ),
+                    //           Row(
+                    //             children: [
+                    //                Column(
+                    //                 mainAxisAlignment: MainAxisAlignment.center,
+                    //                 children: [
+                    //                   Text("Yesterday",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Colors.grey),)
+                    //                 ],
+                    //               )
+                    //             ],
+                    //           )
+                    //         ],
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
+                  // ],
                 )
               ),
             ],
           ),
         ),
-      ),
+     
     );
   }
 }

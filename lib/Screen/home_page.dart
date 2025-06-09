@@ -1,4 +1,10 @@
-import 'package:car_rental/Screen/bottom_navbar_page.dart';
+// import 'dart:nativewrappers/_internal/vm/lib/core_patch.dart';
+import 'dart:math';
+
+import 'package:car_rental/Controller/car_list_controller.dart';
+import 'package:car_rental/Model/car_brand_model.dart';
+import 'package:car_rental/Model/car_model.dart';
+import 'package:car_rental/Screen/global_state.dart';
 import 'package:car_rental/Screen/car_detail_page.dart';
 import 'package:car_rental/Screen/filter_page.dart';
 import 'package:car_rental/Screen/notification_page.dart';
@@ -8,31 +14,53 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  // final VoidCallback onSearchTap;
+  final Function(int) onNavigate;
+  const HomePage({Key? key,required this.onNavigate}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  final List<Map<String,String>> carLogo = [
-    {"image":"images/carLogo/Icon (3).png", "name":"Tesla"},
-    {"image":"images/carLogo/Icon (2).png", "name":"Lamborghini"},
-    {"image":"images/carLogo/Icon (1).png", "name":"BMW"},
-    {"image":"images/carLogo/Icon.png", "name":"Ferrari"},
-  ];
+  late String selectedCountri;
+  late List<CarBrand> brandList;
+  List<Car> sortedCars = [];
 
-  final List<Map<String,dynamic>> cars = [
-    {"image":"images/cars/white-ferrari-ff-car 1.png","title":"Ferrari-FF","rate":5.0,"city":"Washington DC","seats":4,"price":200},
-    {"image":"images/cars/images__5_-removebg-preview 2.png","title":"Tesla Model S","rate":5.0,"city":"Chicago ,USA","seats":5,"price":100},
-    {"image":"images/cars/white-ferrari-ff-car 1.png","title":"Ferrari-FF","rate":5.0,"city":"Washington DC","seats":4,"price":200},
-  ];
+  @override
+  void initState(){
+    super.initState();
+    selectedCountri = AppState.selectedCountri.value ?? '';
+    brandList = carDataByCountry[selectedCountri] ?? [];
+
+    List<Car> allCars = [];
+    for(var brand in brandList){
+      allCars.addAll(brand.cars);
+    }
+    allCars.shuffle(Random());
+
+    // sortedCars.sort((a, b) => b.rating.compareTo(a.rating));
+    sortedCars = allCars.where((car) => car.rating == 5.0).toList();
+  }
+
+  // final List<Map<String,String>> carLogo = [
+  //   {"image":"images/carLogo/Icon (3).png", "name":"Tesla"},
+  //   {"image":"images/carLogo/Icon (2).png", "name":"Lamborghini"},
+  //   {"image":"images/carLogo/Icon (1).png", "name":"BMW"},
+  //   {"image":"images/carLogo/Icon.png", "name":"Ferrari"},
+  // ];
+
+  // final List<Map<String,dynamic>> cars = [
+  //   {"image":"images/cars/white-ferrari-ff-car 1.png","title":"Ferrari-FF","rate":5.0,"city":"Washington DC","seats":4,"price":200},
+  //   {"image":"images/cars/images__5_-removebg-preview 2.png","title":"Tesla Model S","rate":5.0,"city":"Chicago ,USA","seats":5,"price":100},
+  //   {"image":"images/cars/white-ferrari-ff-car 1.png","title":"Ferrari-FF","rate":5.0,"city":"Washington DC","seats":4,"price":200},
+  // ];
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
+    return Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           toolbarHeight: 100,
           backgroundColor: Colors.grey[50],
           title: Padding(
@@ -44,15 +72,17 @@ class _HomePageState extends State<HomePage> {
                 Row(
                   children: [
                     InkWell(
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationPage()));
-                      },
+                      onTap: () => widget.onNavigate(3),
+                      // onTap: () {
+                      //   Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationPage()));
+                      // },
                       child: Image.asset("images/icon-logo/Group 594.png",height: 40,)),
                     SizedBox(width: 7,),
                     InkWell(
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage()));
-                      },
+                      onTap: () => widget.onNavigate(4),
+                      // onTap: () {
+                      //   Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage()));
+                      // },
                       child: Image.asset("images/icon-logo/Group 164.png")),
                   ],
                 ),
@@ -73,9 +103,10 @@ class _HomePageState extends State<HomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       InkWell(
-                        onTap: (){
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => SearchPage()));
-                        },
+                        onTap: () => widget.onNavigate(1),
+                        // onTap: (){
+                        //   Navigator.push(context, MaterialPageRoute(builder: (context) => SearchPage()));
+                        // },
                         child: Container(
                           height: 50,
                           width: 270,
@@ -115,16 +146,24 @@ class _HomePageState extends State<HomePage> {
                     height: 100,
                     child: ListView.builder(
                       scrollDirection:  Axis.horizontal,
-                      itemCount: carLogo.length,
+                      itemCount: brandList.length,
                       itemBuilder: (context,index){
+                        final brand = brandList[index];
                         return Padding(
                           padding: const EdgeInsets.only(right: 20,left: 20),
                           child: Container(
                             child: Column(
                               children: [
-                                Image.asset('${carLogo[index]['image']}',height: 50,),
+                                Container(
+                                  height: 65,
+                                  width: 65,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black,
+                                    borderRadius: BorderRadius.circular(40)
+                                  ),
+                                  child: Center(child: Image.asset(brand.imageBrand,height: 40,width: 40,))),
                                 SizedBox(height: 7,),
-                                Text('${carLogo[index]['name']}',style: TextStyle(fontSize: 12),),
+                                Text(brand.nameBrand,style: TextStyle(fontSize: 12),),
                               ],
                             ),
                           ),
@@ -166,13 +205,14 @@ class _HomePageState extends State<HomePage> {
                             height: 195,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              itemCount: cars.length,
+                              itemCount: sortedCars.length,
                               itemBuilder: (context,index){
+                                final car = sortedCars[index];
                                 return Padding(
                                   padding: const EdgeInsets.only(right: 20),
                                   child: InkWell(
                                     onTap: () {
-                                      Navigator.push(context, MaterialPageRoute(builder: (context) => CarDetailPage(cars: cars,)));
+                                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => CarDetailPage(car: car,),fullscreenDialog: true,));
                                     },
                                     child: Container(
                                       height: 70,
@@ -193,10 +233,10 @@ class _HomePageState extends State<HomePage> {
                                                   borderRadius: BorderRadius.only(topLeft: Radius.circular(10),topRight: Radius.circular(10)),
                                                   color: Colors.grey[200],
                                                 ),
-                                                child: Padding(
-                                                  padding: const EdgeInsets.only(left: 3,right: 3,top: 10,bottom: 10),
-                                                  child: Image.asset('${cars[index]['image']}',height: 65,fit: BoxFit.fill,),
-                                                )
+                                                // child: Padding(
+                                                  // padding: const EdgeInsets.only(left: 3,right: 3,top: 10,bottom: 10),
+                                                  child: Image.asset(car.image[0],height: 65,fit: BoxFit.fill,),
+                                                // )
                                               ),
                                               Positioned(
                                                 right: 5,
@@ -215,11 +255,11 @@ class _HomePageState extends State<HomePage> {
                                             child: Column(
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
-                                                Text("${cars[index]['title']}",style: TextStyle(fontSize: 13,fontWeight: FontWeight.w900),),
+                                                Text(car.name,style: TextStyle(fontSize: 13,fontWeight: FontWeight.w900),),
                                                 SizedBox(height: 5,),
                                                 Row(
                                                   children: [
-                                                    Text("${cars[index]['rate']}",style: TextStyle(fontSize: 12),),
+                                                    Text("${car.rating.toDouble()}",style: TextStyle(fontSize: 12),),
                                                     SizedBox(width: 5,),
                                                     Image.asset("images/icon-logo/Icons (1).png",height: 10,)
                                                   ],
@@ -229,7 +269,7 @@ class _HomePageState extends State<HomePage> {
                                                   children: [
                                                     Image.asset("images/icon-logo/Group 200.png",height: 10,),
                                                     SizedBox(width: 5,),
-                                                    Text("${cars[index]['city']}",style: TextStyle(fontSize: 10),),
+                                                    Text(car.city,style: TextStyle(fontSize: 10),),
                                                   ],
                                                 ),
                                                 SizedBox(height: 5,),
@@ -242,14 +282,14 @@ class _HomePageState extends State<HomePage> {
                                                         children: [
                                                           Image.asset("images/icon-logo/Group 184.png",height: 10,),
                                                           SizedBox(width: 5,),
-                                                          Text("${cars[index]['seats']} Seats",style: TextStyle(fontSize: 10,fontWeight: FontWeight.w900,color: Colors.grey[500]),),
+                                                          Text("${car.seats.toString()} Seats",style: TextStyle(fontSize: 10,fontWeight: FontWeight.w900,color: Colors.grey[500]),),
                                                         ],
                                                       ),
                                                       Row(
                                                         children: [
                                                           Image.asset("images/icon-logo/Group 358.png",height: 13,),
                                                           SizedBox(width: 3,),
-                                                          Text("\$${cars[index]['price']}/Day",style: TextStyle(fontSize: 10,fontWeight: FontWeight.w900),),
+                                                          Text("\$${car.price.toString()}/Day",style: TextStyle(fontSize: 10,fontWeight: FontWeight.w900),),
                                                         ],
                                                       ),
                                                     ],
@@ -311,7 +351,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-      ),
+
     );
   }
 }

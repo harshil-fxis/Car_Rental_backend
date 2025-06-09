@@ -23,7 +23,7 @@ class _SignupPageState extends State<SignupPage> {
     final TextEditingController passwordController = TextEditingController();
     late int userId;
     Future<void> signupUser() async{
-    final String url ='https://f82d-103-173-21-78.ngrok-free.app/signup';
+    final String url ='${ApiConfig.baseUrl}/signup';
     final response = await http.post(
       Uri.parse(url),
       headers : {"Content-Type": "application/json"},

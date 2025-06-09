@@ -1,18 +1,115 @@
+import 'dart:ffi';
+import 'dart:math';
+import 'package:car_rental/Controller/car_list_controller.dart';
+import 'package:car_rental/Model/car_brand_model.dart';
+import 'package:car_rental/Model/car_model.dart';
 import 'package:car_rental/Screen/bottom_navbar_page.dart';
 import 'package:car_rental/Screen/car_detail_page.dart';
 import 'package:car_rental/Screen/filter_page.dart';
+import 'package:car_rental/Screen/global_state.dart';
 import 'package:car_rental/Screen/home_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class SearchPage extends StatefulWidget {
-  const SearchPage({super.key});
+  final int? minPrice;
+  final int? maxPrice;
+  final String? selectedColor;
+  final int? siting;
+  final String? fuel;
+  const SearchPage({super.key,this.minPrice,this.maxPrice,this.selectedColor,this.siting,this.fuel});
+  
 
   @override
   State<SearchPage> createState() => _SearchPageState();
 }
 
 class _SearchPageState extends State<SearchPage> {
+  String selectedCountry = '';
+  String selectedBrand = 'ALL';
+  List<Car> filteredCars = [];
+  late String selectedCountri;
+  late List<CarBrand> brandList = [];
+  TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+
+  @override
+  void initState(){
+    super.initState();
+    // fiteredCars = cars;
+
+    selectedCountri = AppState.selectedCountri.value ?? '';
+    brandList = carDataByCountry[selectedCountri] ?? [];
+    _updateFilteredCars();
+    _searchController.addListener((){
+      setState(() {
+       _searchQuery = _searchController.text.trim().toLowerCase();
+       _updateFilteredCars();
+    });
+    });
+  }
+
+  void _updateFilteredCars(){
+    if(selectedBrand == 'ALL'){
+      filteredCars = brandList.expand((brand) => brand.cars).toList();
+    }
+    else{
+      final selected = brandList.firstWhere((brand) => brand.nameBrand == selectedBrand,
+      orElse: () => CarBrand(nameBrand: '', imageBrand: '', cars: []),
+      );
+      filteredCars = selected.cars;
+    }
+
+
+    if (widget.minPrice != null && widget.maxPrice != null){
+      filteredCars = filteredCars.where((car) => car.price >= widget.minPrice! && car.price <= widget.maxPrice!).toList();
+    }
+
+    if (widget.selectedColor != null){
+      filteredCars = filteredCars.where((car) => car.carColor == widget.selectedColor!).toList();
+    }
+
+    if (widget.siting != null){
+      filteredCars = filteredCars.where((car) => car.seats == widget.siting!).toList();
+    }
+
+    if (widget.fuel != null){
+      filteredCars = filteredCars.where((car) => car.Fuel == widget.fuel!).toList();
+    }
+
+    if (_searchQuery.isNotEmpty){
+      filteredCars = filteredCars.where((car) => car.name.toLowerCase().contains(_searchQuery)).toList();
+    }
+
+    // if(widget.selectedColor != null){
+    //   filteredCars = filteredCars.where((car){
+    //     return car.carColor == widget.selectedColor!;
+    //     print('name: ${widget.selectedColor}');
+    //   }).toList();
+    // }
+    filteredCars.shuffle(Random());
+    setState(() {});
+  }
+
+  List<Car> allCars = [];
+  List<Car> displayedCars = [];
+  
+  void _applyFilters(Map filters) {
+    List<Car> filterd = allCars.where((car){
+      bool matchesPrice = car.price >= filters['price'].start && car.price <= filters['price'].end;
+
+      return matchesPrice;
+    }).toList();
+
+    setState(() {
+      displayedCars = filterd;
+    });
+  }
+
+
+
   int currentCategoryIndex = 0;
   final List<Map<String, String>> carLogo = [
     {"image": "images/icon-logo/Icon (4).png", "name": "All"},
@@ -22,45 +119,45 @@ class _SearchPageState extends State<SearchPage> {
     {"image": "images/carLogo/Icon (2).png", "name": "Lamborghini"},
   ];
 
-  final List<Map<String, dynamic>> cars = [
-    {
-      "image": "images/cars/images__5_-removebg-preview 2.png",
-      "title": "Tesla Model S",
-      "rate": 5.0,
-      "city": "Chicago ,USA",
-      "price": 100
-    },
-    {
-      "image": "images/cars/car img.png",
-      "title": "Lamborghini Aventador",
-      "rate": 4.9,
-      "city": "Washington DC",
-      "price": 100
-    },
-    {
-      "image": "images/cars/pngimg.com - ferrari_PNG10654 1 (1).png",
-      "title": "Ferrari LaFerrari",
-      "rate": 5.0,
-      "city": "Washington DC",
-      "price": 100
-    },
-    {
-      "image": "images/cars/pngimg.com - ferrari_PNG10654 1.png",
-      "title": "BMW GTS3 M2",
-      "rate": 5.0,
-      "city": "New York,USA",
-      "price": 100
-    },
-  ];
+  // final List<Map<String, dynamic>> cars = [
+  //   {
+  //     "image": "images/cars/images__5_-removebg-preview 2.png",
+  //     "title": "Tesla Model S",
+  //     "rate": 5.0,
+  //     "city": "Chicago ,USA",
+  //     "price": 100
+  //   },
+  //   {
+  //     "image": "images/cars/car img.png",
+  //     "title": "Lamborghini Aventador",
+  //     "rate": 4.9,
+  //     "city": "Washington DC",
+  //     "price": 100
+  //   },
+  //   {
+  //     "image": "images/cars/pngimg.com - ferrari_PNG10654 1 (1).png",
+  //     "title": "Ferrari LaFerrari",
+  //     "rate": 5.0,
+  //     "city": "Washington DC",
+  //     "price": 100
+  //   },
+  //   {
+  //     "image": "images/cars/pngimg.com - ferrari_PNG10654 1.png",
+  //     "title": "BMW GTS3 M2",
+  //     "rate": 5.0,
+  //     "city": "New York,USA",
+  //     "price": 100
+  //   },
+  // ];
 
   List<Map<String,dynamic>> fiteredCars = [];
 
-  void initState(){
-    setState(() {
-      super.initState();
-      fiteredCars = cars;
-    });
-  }
+  // void initState(){
+  //   setState(() {
+  //     super.initState();
+  //     fiteredCars = cars;
+  //   });
+  // }
 
   // void filterCars(String query){
   //   setState(() {
@@ -89,9 +186,20 @@ class _SearchPageState extends State<SearchPage> {
   ];
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
+     final List<Map<String, String>> brandWithAll = [
+      {
+        'name' : 'ALL',
+        'image' : 'images/icon-logo/Icon (4).png',
+      },
+      ...brandList.map((brand) => {
+        'name' : brand.nameBrand,
+        'image' : brand.imageBrand,
+      }),
+    ];
+
+    return Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           toolbarHeight: 100,
           backgroundColor: Colors.grey[50],
           title: Padding(
@@ -123,27 +231,30 @@ class _SearchPageState extends State<SearchPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
+                      // images/icon-logo/Group 159.png
+                      Padding(
+                        padding: const EdgeInsets.only(left: 0,right: 20),
+                        child: SizedBox(
                           height: 50,
-                          width: 270,
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.grey.shade500)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              children: [
-                                Image.asset("images/icon-logo/Group 159.png"),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Text("Search your dream car...."),
-                              ],
+                          width: 272,
+                          child: TextField(
+                            controller: _searchController,
+                            decoration: InputDecoration(
+                              prefixIcon: Image.asset('images/icon-logo/Group 159.png'),
+                              fillColor: Colors.white,
+                              filled: true,
+                              hintText: "Search your dream car....",
+                              hintStyle: TextStyle(fontSize: 14),
+                              // border: InputBorder.none
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10)
+                              )
                             ),
-                          )),
+                          ),
+                        ),
+                      ),
                       SizedBox(
-                        width: 20,
+                        width: 0,
                       ),
                       InkWell(
                         onTap: (){
@@ -159,49 +270,65 @@ class _SearchPageState extends State<SearchPage> {
                 Padding(
                   padding: const EdgeInsets.only(left: 20),
                   child: Container(
-                      height: 38,
+                      height: 43,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
-                        itemCount: carLogo.length,
-                        itemBuilder: (context, index) => InkWell(
-                          onTap: () {
-                            setState(() {
-                              currentCategoryIndex = index;
-                            });
-                          },
-                          child: Container(
-                            margin: EdgeInsets.only(right: 5),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(30),
-                              color: index == currentCategoryIndex
-                                  ? Colors.black
-                                  : Colors.transparent,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 5, right: 9),
-                              child: Row(
-                                children: [
-                                  Image.asset(
-                                    '${carLogo[index]['image']}',
-                                    height: 30,
+                        itemCount: brandWithAll.length,
+                        itemBuilder: (context, index){
+                          final brand = brandWithAll[index];
+                            return InkWell(
+                              onTap: () {
+                                setState(() {
+                                  currentCategoryIndex = index;
+                                  selectedBrand = brand['name']!;
+                                  _updateFilteredCars();
+                                  });
+                              },
+                              child: Container(
+                                margin: EdgeInsets.only(right: 15),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(30),
+                                  color: index == currentCategoryIndex
+                                      ? Colors.black
+                                      : Colors.transparent,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 0, right: 10),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        height: 40,
+                                        width: 40,
+                                        decoration: BoxDecoration(
+                                          color: Colors.black,
+                                          borderRadius: BorderRadius.circular(30)
+                                        ),
+                                        child: Center(
+                                          child: Image.asset(
+                                            '${brand['image']}',
+                                            height: 27,
+                                            width: 27,
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 5,
+                                      ),
+                                      Text(
+                                        '${brand['name']}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: index == currentCategoryIndex
+                                              ? Colors.white
+                                              : Colors.black,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  SizedBox(
-                                    width: 7,
-                                  ),
-                                  Text(
-                                    '${carLogo[index]['name']}',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: index == currentCategoryIndex
-                                          ? Colors.white
-                                          : Colors.black,
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
-                            ),
-                          ),
-                        ),
+                            );
+                        },
                       )),
                 ),
                 SizedBox(
@@ -243,16 +370,17 @@ class _SearchPageState extends State<SearchPage> {
                           crossAxisCount: 2, 
                           mainAxisExtent: 170,// Display two products per row
                           crossAxisSpacing: 10,
-                          mainAxisSpacing: 10,
+                          mainAxisSpacing: 12,
                           childAspectRatio: 0.99,
                           // Aspect ratio for better layout
                         ),
                         scrollDirection: Axis.horizontal,
-                        itemCount: cars.length,
+                        itemCount: filteredCars.length,
                         itemBuilder: (context, index) {
+                          final car = filteredCars[index];
                            return InkWell(
                             onTap: (){
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => CarDetailPage(cars: cars,)));
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => CarDetailPage(car: car,)));
                             },
                              child: Container(
                                 decoration: BoxDecoration(
@@ -275,12 +403,12 @@ class _SearchPageState extends State<SearchPage> {
                                           ),
                                           child: Padding(
                                             padding: const EdgeInsets.only(
-                                                left: 3,
-                                                right: 3,
-                                                top: 10,
-                                                bottom: 10),
+                                                left: 0,
+                                                right: 0,
+                                                top: 0,
+                                                bottom: 0),
                                             child: Image.asset(
-                                              '${cars[index]['image']}',
+                                              '${car.image[0]}',
                                               height: 65,
                                               fit: BoxFit.fill,
                                             ),
@@ -305,7 +433,7 @@ class _SearchPageState extends State<SearchPage> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            "${cars[index]['title']}",
+                                            "${car.name}",
                                             style: TextStyle(
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.w900),
@@ -316,7 +444,7 @@ class _SearchPageState extends State<SearchPage> {
                                           Row(
                                             children: [
                                               Text(
-                                                "${cars[index]['rate']}",
+                                                "${car.rating}",
                                                 style: TextStyle(fontSize: 12),
                                               ),
                                               SizedBox(
@@ -341,7 +469,7 @@ class _SearchPageState extends State<SearchPage> {
                                                 width: 5,
                                               ),
                                               Text(
-                                                "${cars[index]['city']}",
+                                                "${car.city}",
                                                 style: TextStyle(fontSize: 10),
                                               ),
                                             ],
@@ -356,7 +484,7 @@ class _SearchPageState extends State<SearchPage> {
                                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
                                                 Text(
-                                                  "\$${cars[index]['price']}/Day",
+                                                  "\$${car.price}/Day",
                                                   style: TextStyle(
                                                       fontSize: 10,
                                                       fontWeight:
@@ -456,7 +584,6 @@ class _SearchPageState extends State<SearchPage> {
             ),
           ),
         ),
-      ),
     );
   }
 }
