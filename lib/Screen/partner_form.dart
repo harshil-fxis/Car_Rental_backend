@@ -1,8 +1,12 @@
 import 'dart:ui';
 import 'package:car_rental/Screen/home_page.dart';
 import 'package:car_rental/Screen/partener_otp_confirmation_page.dart';
+import 'package:car_rental/Screen/profile_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+
+enum TabType { brand, model }
 
 class PartnerForm extends StatefulWidget {
   const PartnerForm({super.key});
@@ -50,8 +54,17 @@ class _PartnerFormState extends State<PartnerForm> {
     super.dispose();
   }
 
+  TabType selectedTab = TabType.brand;
   List<String> rCarBrand = ['Tesla','Honda','Totota','Nissan','Mercedes'];
   List<String> lCarBrand = ['BMW','Ferrari','Bentley','Maybach','Lamborghini'];
+  String? selectedBrand;
+
+  void selectBrand(String brand){
+    setState(() {
+      selectedBrand = brand;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -67,9 +80,19 @@ class _PartnerFormState extends State<PartnerForm> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  InkWell(onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
-                  }, 
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                      
+                    },
+                    // onTap: () {
+                    //   Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage(onNavigate: null)));
+                    // },
+                    // onTap: () => onNavigate(0),
+                  //   onTap: (){
+                  //   // Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+                  // }, 
                   child: Image.asset("images/icon-logo/Group 197.png",height: 40,)),
                   Text("QENT Partner program",style: TextStyle(fontSize: 20,fontWeight: FontWeight.w900),),
                   Image.asset("images/icon-logo/Group 198.png",height: 40,),
@@ -79,7 +102,7 @@ class _PartnerFormState extends State<PartnerForm> {
         ),
         body: SingleChildScrollView(
           child: Container(
-            child: Column(
+            child: Column( 
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
@@ -289,6 +312,8 @@ class _PartnerFormState extends State<PartnerForm> {
                                         onTap: () {
                                           setState(() {
                                             rCarBrandIndex = index;
+                                            lCarBrandIndex = -1;
+                                            selectedBrand = rCarBrand[index];
                                           }
                                           );
                                         },
@@ -344,6 +369,8 @@ class _PartnerFormState extends State<PartnerForm> {
                                         onTap: () {
                                           setState(() {
                                             lCarBrandIndex = index;
+                                            rCarBrandIndex = -1;
+                                            selectedBrand = lCarBrand[index];
                                           }
                                           );
                                         },

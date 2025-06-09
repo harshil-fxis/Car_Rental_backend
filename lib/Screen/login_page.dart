@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
   late int? userId;
   Future<void> loginData() async{
     try{
-      final response = await http.post(Uri.parse("https://f82d-103-173-21-78.ngrok-free.app/login"),
+      final response = await http.post(Uri.parse("${ApiConfig.baseUrl}/login"),
         headers: {
           'Content-Type': 'application/json',
         },

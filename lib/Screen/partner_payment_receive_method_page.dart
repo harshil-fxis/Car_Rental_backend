@@ -32,7 +32,7 @@ class _PartnerPaymentReceiveMethodPageState extends State<PartnerPaymentReceiveM
                 SizedBox(height: 20,),
                 InkWell(
                   onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+                    // Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
                   },
                   child: Container(
                     height: 50,

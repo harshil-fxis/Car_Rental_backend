@@ -27,7 +27,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     InkWell(onTap: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+                      // Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
                     }, 
                     child: Image.asset("images/icon-logo/Group 197.png",height: 40,)),
                     Text("Profile",style: TextStyle(fontSize: 20,fontWeight: FontWeight.w900),),

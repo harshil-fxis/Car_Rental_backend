@@ -1,6 +1,8 @@
+import 'package:car_rental/Controller/car_list_controller.dart';
 import 'package:car_rental/Screen/bottom_navbar_page.dart';
 import 'package:car_rental/Screen/home_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class VerificationCodePage extends StatefulWidget {
   const VerificationCodePage({super.key});
@@ -62,7 +64,17 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                           height: 100,
                           width: 50,
                           child: TextField(
-                            maxLength: 1,
+                            onChanged: (value){
+                              if (value.length == 1){
+                                FocusScope.of(context).nextFocus();
+                              }
+                            },
+                            style: Theme.of(context).textTheme.headlineMedium,
+                            textAlign: TextAlign.center,
+                            inputFormatters: [
+                              LengthLimitingTextInputFormatter(1),
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
                             textInputAction: TextInputAction.next,
                             autofocus: true,
                             keyboardType: TextInputType.number,
@@ -81,7 +93,17 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                           height: 100,
                           width: 50,
                           child: TextField(
-                            maxLength: 1,
+                            onChanged: (value){
+                              if (value.length == 1){
+                                FocusScope.of(context).nextFocus();
+                              }
+                            },
+                            style: Theme.of(context).textTheme.headlineMedium,
+                            textAlign: TextAlign.center,
+                            inputFormatters: [
+                              LengthLimitingTextInputFormatter(1),
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
                             textInputAction: TextInputAction.next,
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
@@ -99,7 +121,17 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                           height: 100,
                           width: 50,
                           child: TextField(
-                            maxLength: 1,
+                            onChanged: (value){
+                              if (value.length == 1){
+                                FocusScope.of(context).nextFocus();
+                              }
+                            },
+                            style: Theme.of(context).textTheme.headlineMedium,
+                            textAlign: TextAlign.center,
+                            inputFormatters: [
+                              LengthLimitingTextInputFormatter(1),
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
                             textInputAction: TextInputAction.next,
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
@@ -117,7 +149,17 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                           height: 100,
                           width: 50,
                           child: TextField(
-                            maxLength: 1,
+                            onChanged: (value){
+                              if (value.length == 1){
+                                FocusScope.of(context).nextFocus();
+                              }
+                            },
+                            style: Theme.of(context).textTheme.headlineMedium,
+                            textAlign: TextAlign.center,
+                            inputFormatters: [
+                              LengthLimitingTextInputFormatter(1),
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
                             textInputAction: TextInputAction.done,
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(

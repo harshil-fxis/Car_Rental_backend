@@ -1,9 +1,11 @@
+import 'package:car_rental/Model/car_model.dart';
+import 'package:car_rental/Model/review_model.dart';
 import 'package:car_rental/Screen/car_detail_page.dart';
 import 'package:flutter/material.dart';
 
 class ReviewPage extends StatefulWidget {
-  final dynamic review;
-  const ReviewPage({Key? key, required this.review})
+  final Car car;
+  const ReviewPage({Key? key, required this.car})
       : super(key: key);
 
   @override
@@ -11,47 +13,84 @@ class ReviewPage extends StatefulWidget {
 }
 
 class _ReviewPageState extends State<ReviewPage> {
-  final List<Map<String, dynamic>> review = [
-    {
-      "image": "images/icon-logo/Ellipse 201.png",
-      "name": "Mr.Jack",
-      "rate": 5,
-      "detail": "The rental car was clean, reliable, and the service was quick and efficient. Overall, the experience was hassle-free and enjoyable.",
-      "time": "Today",
-    },
-    {
-      "image": "images/icon-logo/Ellipse 202.png",
-      "name": "Robert",
-      "rate": 5,
-      "detail": "The rental car was clean, reliable, and the service was quick and efficient. Overall, the experience was hassle-free and enjoyable.",
-      "time": "Yesterday"
-    },
-    {
-      "image": "images/icon-logo/Ellipse 201 (1).png",
-      "name": "Julies",
-      "rate": 5,
-      "detail": "The rental car was clean, reliable, and the service was quick and efficient. Overall, the experience was hassle-free and enjoyable.",
-      "time": "2 Weekes ago"
-    },
-    {
-      "image": "images/icon-logo/Ellipse 201 (3).png",
-      "name": "Mr.Jon",
-      "rate": 5,
-      "detail": "The rental car was clean, reliable, and the service was quick and efficient. Overall, the experience was hassle-free and enjoyable.",
-      "time": "3 Weekes ago"
-    },
-    {
-      "image": "images/icon-logo/Ellipse 201 (2).png",
-      "name": "Hanrick",
-      "rate": 3,
-      "detail": "The rental car was clean, reliable, and the service was quick and efficient. Overall, the experience was hassle-free and enjoyable.",
-      "time": "3 Weekes ago"
-    },
-  ];
+  // List<Review> reviews = [];
+  // final List<Map<String, dynamic>> review = [
+  //   {
+  //     "image": "images/icon-logo/Ellipse 201.png",
+  //     "name": "Mr.Jack",
+  //     "rate": 5,
+  //     "detail": "The rental car was clean, reliable, and the service was quick and efficient. Overall, the experience was hassle-free and enjoyable.",
+  //     "time": "Today",
+  //   },
+  //   {
+  //     "image": "images/icon-logo/Ellipse 202.png",
+  //     "name": "Robert",
+  //     "rate": 5,
+  //     "detail": "The rental car was clean, reliable, and the service was quick and efficient. Overall, the experience was hassle-free and enjoyable.",
+  //     "time": "Yesterday"
+  //   },
+  //   {
+  //     "image": "images/icon-logo/Ellipse 201 (1).png",
+  //     "name": "Julies",
+  //     "rate": 5,
+  //     "detail": "The rental car was clean, reliable, and the service was quick and efficient. Overall, the experience was hassle-free and enjoyable.",
+  //     "time": "2 Weekes ago"
+  //   },
+  //   {
+  //     "image": "images/icon-logo/Ellipse 201 (3).png",
+  //     "name": "Mr.Jon",
+  //     "rate": 5,
+  //     "detail": "The rental car was clean, reliable, and the service was quick and efficient. Overall, the experience was hassle-free and enjoyable.",
+  //     "time": "3 Weekes ago"
+  //   },
+  //   {
+  //     "image": "images/icon-logo/Ellipse 201 (2).png",
+  //     "name": "Hanrick",
+  //     "rate": 3,
+  //     "detail": "The rental car was clean, reliable, and the service was quick and efficient. Overall, the experience was hassle-free and enjoyable.",
+  //     "time": "3 Weekes ago"
+  //   },
+  // ];
+
+  TextEditingController _searchController = TextEditingController();
+  List<Review> filteredReviews = [];
+
+
+  @override
+  void initState(){
+    super.initState();
+    filteredReviews = widget.car.reviews;
+    _searchController.addListener((){
+      _updateFilteredReviews();
+    });
+  }
+
+
+
+
+  void _updateFilteredReviews(){
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      if (query.isEmpty){
+        filteredReviews = widget.car.reviews;
+      }
+      else{
+        filteredReviews = widget.car.reviews.where((review) => review.Name.toLowerCase().contains(query)).toList();
+      } 
+    });
+     
+  }
+
+  double getAverageRating(List<Review> reviews){
+    if(reviews.isEmpty) return 0.0;
+    double total = reviews.fold(0.0, (sum, review) => sum + review.rate);
+    return total / reviews.length;
+  }
 
   final int maxRate = 5;
   @override
   Widget build(BuildContext context) {
+    final double averageRating = getAverageRating(widget.car.reviews);
     return MaterialApp(
       home: Scaffold(
         backgroundColor: Colors.grey[100],
@@ -66,10 +105,11 @@ class _ReviewPageState extends State<ReviewPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 InkWell(onTap: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => CarDetailPage(cars: null,)));
+                  Navigator.pop(context);
+                  // Navigator.push(context, MaterialPageRoute(builder: (context) => CarDetailPage(car: widget.car,)));
                 }, 
                 child: Image.asset("images/icon-logo/Group 197.png",height: 40,)),
-                Text("Search",style: TextStyle(fontSize: 20,fontWeight: FontWeight.w900),),
+                Text("Reviews",style: TextStyle(fontSize: 20,fontWeight: FontWeight.w900),),
                 Image.asset("images/icon-logo/Group 198.png",height: 40,),
               ],
             ),
@@ -90,7 +130,7 @@ class _ReviewPageState extends State<ReviewPage> {
                   children: [
                     Image.asset("images/icon-logo/rating.png",),
                     SizedBox(width: 10,),
-                    Text("5.0 Reviews (125)",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),)
+                    Text("${averageRating} Reviews (${widget.car.reviews.length})",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),)
                   ],
                 ),
               ),
@@ -100,6 +140,7 @@ class _ReviewPageState extends State<ReviewPage> {
                 child: SizedBox(
                   height: 50,
                   child: TextField(
+                    controller: _searchController,
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.white,
@@ -125,8 +166,9 @@ class _ReviewPageState extends State<ReviewPage> {
                   color: Colors.grey[100],
                   child: ListView.builder(
                     scrollDirection: Axis.vertical,
-                    itemCount: review.length,
+                    itemCount: filteredReviews.length,
                     itemBuilder: (context,index){
+                      final review = filteredReviews[index];
                       return Padding(
                         padding: const EdgeInsets.only(left: 20,right: 20,bottom: 20),
                         child: Container(
@@ -148,14 +190,15 @@ class _ReviewPageState extends State<ReviewPage> {
                                     children: [
                                       Row(
                                         children: [
-                                          Image.asset("${review[index]['image']}",height: 30,),
+                                          Image.asset("${review.Image}",height: 30,),
                                           SizedBox(width: 7),
-                                          Text("${review[index]['name']}",style: TextStyle(fontSize: 13,fontWeight: FontWeight.w900),)
+                                          Text("${review.Name}",style: TextStyle(fontSize: 13,fontWeight: FontWeight.w900),)
                                         ],
                                       ),
                                       Row(
                                         children: [
-                                          Text("${review[index]['time']}",style: TextStyle(fontSize: 12),)
+                                          Text('Time',style: TextStyle(fontSize: 12))
+                                          // Text("${review[index]['time']}",style: TextStyle(fontSize: 12),)
                                         ],
                                       ),               
                                     ],
@@ -165,7 +208,7 @@ class _ReviewPageState extends State<ReviewPage> {
                                     width: double.infinity,
                                     child: Row(
                                       children: List.generate(maxRate,(index){
-                                        final rating = review[index]['rate'];
+                                        final rating = review.rate;
                                         return Image.asset(
                                           index < rating
                                           ? "images/icon-logo/rating.png"
@@ -177,7 +220,7 @@ class _ReviewPageState extends State<ReviewPage> {
                                   Container(
                                     height: 55,
                                     width: 290,
-                                    child: Text("${review[index]['detail']}",style: TextStyle(fontSize: 12),))
+                                    child: Text("${review.detail}",style: TextStyle(fontSize: 12),))
                                   ],
                             ),
                           ),

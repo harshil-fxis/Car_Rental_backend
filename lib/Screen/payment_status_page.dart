@@ -29,7 +29,7 @@ class _PaymentStatusPageState extends State<PaymentStatusPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         InkWell(onTap: (){
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+                          // Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
                 }, 
                 child: Image.asset("images/icon-logo/Group 197.png",height: 40,)),
                 Text("Conirmation",style: TextStyle(fontSize: 20,fontWeight: FontWeight.w900),),
@@ -241,7 +241,7 @@ class _PaymentStatusPageState extends State<PaymentStatusPage> {
                       SizedBox(height: 25,),
                       InkWell(
                         onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+                          // Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
                         },
                         child: Container(
                           height: 60,

@@ -17,25 +17,37 @@ class FilterPage extends StatefulWidget {
 class _FilterPageState extends State<FilterPage> {
   List<String> carType = ['All Cars', 'Regular Cars', 'Luxury Cars'];
   List<String> timeType = ['Hour', 'Day', 'Weekly','Monthly'];
-  List<dynamic> siting = [2, 4, 5, 8];
+  List<dynamic> siting = [2, 4, 5, 7];
   List<String> FuelType = ['Electric', 'Petrol', 'Diesel','Hybrid'];
+  List<Map<String,dynamic>> colorOptions = [
+    {'name':'White','color':Colors.white },
+    {'name':'Gray','color':Colors.grey,},
+    { 'name':'Blue','color':Colors.blue},
+    {'name':'Black','color':Colors.black},
+    {'name':'Red','color':Colors.red}
+  ];
+  int? _selectedIndex;
+  String? selectedColorName;
+  String selectedName = '';
+  String? selectedFuel;
+
   
-  int sitingIndex = -1;
+  
+  int? sitingIndex;
   int currentIndex = -1;
   int currentCategoryIndex = 0;
   int fuelIndex = -1;
   bool value = false;
 
-   int _selectedIndex = -1;
 
   void _onItemTapped(int index){
     setState(() {
       _selectedIndex = index;
     });
   }
-
-  RangeValues values = const RangeValues(10, 230);
-  RangeLabels labels = const RangeLabels('10', '230');
+  
+  RangeValues values = const RangeValues(3000, 10000);
+  RangeLabels labels = const RangeLabels('3000', '10000');
 
   DateTime today = DateTime.now(); 
 
@@ -344,13 +356,13 @@ class _FilterPageState extends State<FilterPage> {
                               left: 0,
                               child: RangeSlider(
                                 values: values, 
-                                min: 10,
-                                max: 230,
+                                min: 3000,
+                                max: 10000,
                                 // divisions: 200,
                                 labels: labels,
                                 activeColor: Colors.white,
                                 inactiveColor: Colors.grey[200],
-                                onChanged: (value){
+                                onChanged: (RangeValues value){
                                   setState(() {
                                     values = value;
                                     // labels = RangeLabels(
@@ -522,88 +534,43 @@ class _FilterPageState extends State<FilterPage> {
                       ),
                       SizedBox(height: 20,),
                       Padding(
-                        padding: const EdgeInsets.only(left: 20,right: 20),
+                        padding: const EdgeInsets.only(left: 15.0),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Row(
-                              children: [
-                                InkWell(
-                                  onTap: () => _onItemTapped(0),
-                                  child: Container(
-                                    height: 30,
-                                    width: 30,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(30),
-                                      border: Border.all(color: Colors.grey.shade400)
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: List.generate(colorOptions.length, (index){
+                            final item = colorOptions[index];
+                            
+                            return InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _selectedIndex = index;
+                                  selectedColorName = item['name'];
+                                });
+                              },
+                              child: Padding(padding: EdgeInsets.only(left: 7),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      height: 25,
+                                      width: 25,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: Colors.grey
+                                        ),
+                                        color: item['color'],
+                                        shape: BoxShape.circle
+                                      ),
+                                      child: _selectedIndex == index ? Icon(Icons.check, size: 18,color: _selectedIndex == 3 ?Colors.white : Colors.black,)
+                                      : null
                                     ),
-                                    child: Icon(Icons.check,color: _selectedIndex == 0 ?Colors.black : Colors.white,)
-                                  ),
+                                    SizedBox(width: 7,),
+                                    Text(item['name'],style: TextStyle(fontSize: 12,fontWeight: FontWeight.w500),),
+                                    SizedBox(width: 5,)
+                                  ],
                                 ),
-                                SizedBox(width: 5,),
-                                Text("White",style: TextStyle(fontSize: 12),),
-                              ],
-                            ),
-                        
-                            Row(
-                              children: [
-                                InkWell(
-                                  onTap: () => _onItemTapped(1),
-                                  child: Container(
-                                    height: 30,
-                                    width: 30,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey.shade400,
-                                      borderRadius: BorderRadius.circular(30),
-                                      // border: Border.all(color: Colors.grey.shade900)
-                                    ),
-                                    child: Icon(Icons.check,color: _selectedIndex == 1 ?Colors.black : Colors.grey.shade400,)
-                                  ),
-                                ),
-                                SizedBox(width: 5,),
-                                Text("Gray",style: TextStyle(fontSize: 12),),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                InkWell(
-                                  onTap: () => _onItemTapped(2),
-                                  child: Container(
-                                    height: 30,
-                                    width: 30,
-                                    decoration: BoxDecoration(
-                                      color: Colors.blue,
-                                      borderRadius: BorderRadius.circular(30),
-                                      // border: Border.all(color: Colors.black)
-                                    ),
-                                    child: Icon(Icons.check,color: _selectedIndex == 2 ?Colors.white : Colors.blue,)
-                                  ),
-                                ),
-                                SizedBox(width: 5,),
-                                Text("Blue",style: TextStyle(fontSize: 12),),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                InkWell(
-                                  onTap: () => _onItemTapped(3),
-                                  child: Container(
-                                    height: 30,
-                                    width: 30,
-                                    decoration: BoxDecoration(
-                                      color: Colors.black,
-                                      borderRadius: BorderRadius.circular(30),
-                                      // border: Border.all(color: Colors.grey.shade400)
-                                    ),
-                                    child: Icon(Icons.check,color: _selectedIndex == 3 ?Colors.white : Colors.black,)
-                                  ),
-                                ),
-                                SizedBox(width: 5,),
-                                Text("Black",style: TextStyle(fontSize: 12),),
-                              ],
-                            ),
-                          ],
+                              ),
+                            );
+                          }),
                         ),
                       ),
                       SizedBox(height: 20,),
@@ -622,37 +589,42 @@ class _FilterPageState extends State<FilterPage> {
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
                               itemCount: siting.length,
-                              itemBuilder: (context, index) => InkWell(
+                              itemBuilder: (context, index){
+                                int seat = siting[index];
+                                bool isSelected = sitingIndex == seat;
+                              return InkWell(
                                 onTap: () {
                                   setState(() {
-                                    sitingIndex = index;
+                                    // sitingIndex = index;
+                                    sitingIndex = seat;
                                   }
                                   );
                                 },
-                              child: Container(
-                                margin: EdgeInsets.only(right: 15),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(30),
-                                  border: Border.all(
-                                    color: Colors.grey.shade300,
+                                child: Container(
+                                  margin: EdgeInsets.only(right: 15),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(30),
+                                    border: Border.all(
+                                      color: Colors.grey.shade300,
+                                    ),
+                                    color: isSelected
+                                    ? Colors.black
+                                    : Colors.transparent,
                                   ),
-                                  color: index == sitingIndex
-                                  ? Colors.black
-                                  : Colors.transparent,
-                                ),
-                                child: Padding(
-                                    padding: const EdgeInsets.only(left: 32, right: 32),                              
-                                    child:  Center(
-                                      child: Text('${siting[index]}',style: TextStyle(fontSize: 12,
-                                        color: index == sitingIndex
-                                        ? Colors.white
-                                        : Colors.black,
+                                  child: Padding(
+                                      padding: const EdgeInsets.only(left: 32, right: 32),                              
+                                      child:  Center(
+                                        child: Text('$seat',style: TextStyle(fontSize: 12,
+                                          color: isSelected
+                                          ? Colors.white
+                                          : Colors.black,
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
+                              );
+                              }
                             )
                           ),
                         ),
@@ -672,37 +644,41 @@ class _FilterPageState extends State<FilterPage> {
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
                               itemCount: FuelType.length,
-                              itemBuilder: (context, index) => InkWell(
+                              itemBuilder: (context, index) {
+                                String fuel = FuelType[index];
+                                bool isSelect = fuel == selectedFuel;
+                              return InkWell(
                                 onTap: () {
                                   setState(() {
-                                    fuelIndex = index;
+                                    selectedFuel = fuel;
                                   }
                                   );
                                 },
-                              child: Container(
-                                margin: EdgeInsets.only(right: 14),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(30),
-                                  border: Border.all(
-                                    color: Colors.grey.shade300,
+                                child: Container(
+                                  margin: EdgeInsets.only(right: 14),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(30),
+                                    border: Border.all(
+                                      color: Colors.grey.shade300,
+                                    ),
+                                    color: isSelect
+                                    ? Colors.black
+                                    : Colors.transparent,
                                   ),
-                                  color: index == fuelIndex
-                                  ? Colors.black
-                                  : Colors.transparent,
-                                ),
-                                child: Padding(
-                                    padding: const EdgeInsets.only(left: 18, right: 18),                              
-                                    child:  Center(
-                                      child: Text('${FuelType[index]}',style: TextStyle(fontSize: 12,
-                                        color: index == fuelIndex
-                                        ? Colors.white
-                                        : Colors.black,
+                                  child: Padding(
+                                      padding: const EdgeInsets.only(left: 18, right: 18),                              
+                                      child:  Center(
+                                        child: Text('$fuel',style: TextStyle(fontSize: 12,
+                                          color: isSelect
+                                          ? Colors.white
+                                          : Colors.black,
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
+                              );
+                            }
                             )
                           ),
                         ),
@@ -721,18 +697,25 @@ class _FilterPageState extends State<FilterPage> {
                             InkWell(
                               onTap: (){
                                 setState(() {
-                                  currentIndex = -1;
-                                  fuelIndex = -1;
-                                  sitingIndex = -1;
-                                  _selectedIndex = -1;
-                                  values = RangeValues(10, 230);
+                                  // currentIndex = -1;
+                                  selectedFuel = null;
+                                  selectedColorName = null;
+                                  sitingIndex = null;
+                                  values = RangeValues(3000, 10000);
                                   value = false;
                                 });
                               },
                               child: Text("Clear All",style: TextStyle(fontSize: 13,fontWeight: FontWeight.w700),)),
                             InkWell(
                               onTap: () {
-                                Navigator.of(context).pop();
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => SearchPage(
+                                  minPrice: values.start.toInt(),
+                                  maxPrice: values.end.toInt(),
+                                  selectedColor: selectedColorName,
+                                  siting: sitingIndex,
+                                  fuel: selectedFuel,
+
+                                )));
                               },
                               child: Container(
                                 height: 50,

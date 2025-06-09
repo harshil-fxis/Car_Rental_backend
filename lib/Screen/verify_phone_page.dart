@@ -70,7 +70,7 @@ class _VerifyPhonePageState extends State<VerifyPhonePage> {
   TextEditingController phoneController = TextEditingController();
   Future<void> sendOTP() async{
     try{
-      final response = await http.post(Uri.parse("https://f82d-103-173-21-78.ngrok-free.app/phone"),
+      final response = await http.post(Uri.parse("${ApiConfig.baseUrl}/phone"),
         headers: {
           'Content-Type': 'application/json',
         },

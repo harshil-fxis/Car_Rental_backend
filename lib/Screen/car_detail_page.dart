@@ -1,3 +1,5 @@
+import 'package:car_rental/Model/car_model.dart';
+import 'package:car_rental/Model/review_model.dart';
 import 'package:car_rental/Screen/booking_page.dart';
 import 'package:car_rental/Screen/bottom_navbar_page.dart';
 import 'package:car_rental/Screen/message_page.dart';
@@ -7,8 +9,8 @@ import 'package:flutter/material.dart';
 
 
 class CarDetailPage extends StatefulWidget {
-  final dynamic cars;
-  const CarDetailPage({Key? key, required this.cars})
+  final Car car;
+  const CarDetailPage({Key? key, required this.car})
       : super(key: key);
 
 
@@ -17,27 +19,42 @@ class CarDetailPage extends StatefulWidget {
 }
 
 class _CarDetailPageState extends State<CarDetailPage> {
-  final List<Map<String, dynamic>> review = [
-    {
-      "image": "images/icon-logo/Ellipse 201.png",
-      "name": "Mr.Jack",
-      "rate": 5.0,
-      "detail": "The rental car was clean, reliable, and the service was quick and efficient.",
-    },
-    {
-      "image": "images/icon-logo/Ellipse 202.png",
-      "name": "Robert",
-      "rate": 5.0,
-      "detail": "The rental car was clean, reliable, and the service was quick and efficient.",
-    },
-  ];
-
+  // final List<Map<String, dynamic>> review = [
+  //   {
+  //     "image": "images/icon-logo/Ellipse 201.png",
+  //     "name": "Mr.Jack",
+  //     "rate": 5.0,
+  //     "detail": "The rental car was clean, reliable, and the service was quick and efficient.",
+  //   },
+  //   {
+  //     "image": "images/icon-logo/Ellipse 202.png",
+  //     "name": "Robert",
+  //     "rate": 5.0,
+  //     "detail": "The rental car was clean, reliable, and the service was quick and efficient.",
+  //   },
+  // ];
+  
   List<String> cars = []; 
+  PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  // @override
+  // void initState(){
+  //   super.initState();
+  //   _pageController.addListener((){
+  //     int next = _pageController.page!.round();
+  //     if(_currentPage != next){
+  //       _currentPage = next;
+  //     }
+  //   });
+  // }
+
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+        
         backgroundColor: Colors.grey[200],
          appBar: AppBar(
             toolbarHeight: 100,
@@ -67,52 +84,62 @@ class _CarDetailPageState extends State<CarDetailPage> {
                     Container(
                       height: 1,
                       width: double.infinity,
-                      color: Colors.grey[300],
+                      color: Colors.grey[400],
                     ),
                     Container(
-                      height: 250,
+                      height: 216,
                       width: double.infinity,
                       color: Colors.grey[100],
                       child: Column(
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.only(top: 20.0),
-                            child: Container(
-                              height: 200,
-                              width: double.infinity,
-                              child: Image.asset("images/cars/images__5_-removebg-preview 1.png",)),
+                          Stack(
+                            children: [
+                              // Padding(
+                              //   padding: const EdgeInsets.only(top: 0.0),
+                              //   child: Container(
+                              //     height: 216,
+                              //     width: double.infinity,
+                              //     child: Image.asset(widget.car.image[0],)),
+                              // ),
+                              SizedBox(
+                                height: 216,
+                                width: double.infinity,
+                                child: PageView.builder(
+                                  controller: _pageController,
+                                  itemCount: widget.car.image.length,
+                                  onPageChanged: (index) {
+                                    setState(() {
+                                      _currentPage = index;
+                                    });
+                                  },
+                                  itemBuilder: (context, index){
+                                    return Image.asset(widget.car.image[index],fit: BoxFit.cover,);
+                                  }),
+                              ),
+                              Positioned(
+                                bottom: 10,
+                                right: 0,
+                                left: 0,
+                                child:Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: List.generate(
+                                    widget.car.image.length,
+                                    (index){
+                                      return Padding(
+                                        padding: const EdgeInsets.all(2.0),
+                                        child: Container(
+                                        height: 7,
+                                        width: 7,
+                                        decoration: BoxDecoration(
+                                          color: _currentPage == index ? Colors.black : Colors.grey,
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        ),
+                                      );
+                                    })
+                            ))
+                            ],
                           ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  height: 7,
-                                  width: 7,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                ),
-                                SizedBox(width: 5,),
-                                Container(
-                                  height: 7,
-                                  width: 7,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[400],
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                ),
-                                SizedBox(width: 5,),
-                                Container(
-                                  height: 7,
-                                  width: 7,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[400],
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                ),
-                              ],
-                            )
                         ],
                       )
                     ),
@@ -121,7 +148,7 @@ class _CarDetailPageState extends State<CarDetailPage> {
                       width: 500,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.only(topLeft: Radius.circular(30),topRight: Radius.circular(20))
+                        borderRadius: BorderRadius.only(topLeft: Radius.circular(30),topRight: Radius.circular(30))
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -140,11 +167,11 @@ class _CarDetailPageState extends State<CarDetailPage> {
                                   children: [
                                     Padding(
                                       padding: const EdgeInsets.only(left: 20,top: 20),
-                                      child: Text("Tesla Model S",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
+                                      child: Text(widget.car.name,style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.only(left: 20,top: 10),
-                                      child: Text("A car with high specs theat are rented ot an affordable price.",style: TextStyle(fontSize: 12,color: Colors.grey[500]),),
+                                      child: Text(widget.car.details,style: TextStyle(fontSize: 12,color: Colors.grey[500]),),
                                     ),                                
                                   ],
                                 ),
@@ -163,7 +190,7 @@ class _CarDetailPageState extends State<CarDetailPage> {
                                         Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
-                                            Text("5.0",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
+                                            Text('${widget.car.rating}',style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
                                             SizedBox(width: 5,),
                                             Image.asset("images/icon-logo/Icons (1).png",height: 10,),
                                           ],
@@ -190,9 +217,9 @@ class _CarDetailPageState extends State<CarDetailPage> {
                                 children: [
                                   Row(
                                     children: [
-                                      Image.asset("images/icon-logo/user1.png",height: 40,),
+                                      Image.asset(widget.car.owner.image,height: 40,),
                                       SizedBox(width: 15,),
-                                      Text("Hela Quintin",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w900),),
+                                      Text(widget.car.owner.name,style: TextStyle(fontSize: 12,fontWeight: FontWeight.w900),),
                                       SizedBox(width: 10,),
                                       Image.asset("images/icon-logo/Group 596.png",height: 20,),
                                     ],
@@ -245,7 +272,7 @@ class _CarDetailPageState extends State<CarDetailPage> {
                                               SizedBox(height: 10,),
                                               Text("Capacity",style: TextStyle(fontSize: 11,color: Colors.grey[700]),),
                                               SizedBox(height: 3,),
-                                              Text("5 Seats",style: TextStyle(fontSize: 13,fontWeight: FontWeight.w900),)
+                                              Text("${widget.car.seats} Seats",style: TextStyle(fontSize: 13,fontWeight: FontWeight.w900),)
                                             ],),
                                           ),
                                         ),
@@ -265,7 +292,7 @@ class _CarDetailPageState extends State<CarDetailPage> {
                                               SizedBox(height: 10,),
                                               Text("Engine Out",style: TextStyle(fontSize: 11,color: Colors.grey[700]),),
                                               SizedBox(height: 3,),
-                                              Text("670 HP",style: TextStyle(fontSize: 13,fontWeight: FontWeight.w900),)
+                                              Text("${widget.car.engineOut}",style: TextStyle(fontSize: 13,fontWeight: FontWeight.w900),)
                                             ],),
                                           ),
                                         ),
@@ -285,7 +312,7 @@ class _CarDetailPageState extends State<CarDetailPage> {
                                               SizedBox(height: 10,),
                                               Text("Max Speed",style: TextStyle(fontSize: 11,color: Colors.grey[700]),),
                                               SizedBox(height: 3,),
-                                              Text("250Km/h",style: TextStyle(fontSize: 13,fontWeight: FontWeight.w900),)
+                                              Text("${widget.car.maxSpeed} Km/h",style: TextStyle(fontSize: 13,fontWeight: FontWeight.w900),)
                                             ],),
                                           ),
                                         )
@@ -313,7 +340,7 @@ class _CarDetailPageState extends State<CarDetailPage> {
                                               SizedBox(height: 10,),
                                               Text("Advance",style: TextStyle(fontSize: 11,color: Colors.grey[700]),),
                                               SizedBox(height: 3,),
-                                              Text("Autopilot",style: TextStyle(fontSize: 13,fontWeight: FontWeight.w900),)
+                                              Text("${widget.car.advance}",style: TextStyle(fontSize: 13,fontWeight: FontWeight.w900),)
                                             ],),
                                           ),
                                         ),
@@ -333,7 +360,7 @@ class _CarDetailPageState extends State<CarDetailPage> {
                                               SizedBox(height: 10,),
                                               Text("Single Charge",style: TextStyle(fontSize: 11,color: Colors.grey[700]),),
                                               SizedBox(height: 3,),
-                                              Text("450 Miles",style: TextStyle(fontSize: 13,fontWeight: FontWeight.w900),)
+                                              Text("${widget.car.mileage} Miles",style: TextStyle(fontSize: 13,fontWeight: FontWeight.w900),)
                                             ],),
                                           ),
                                         ),
@@ -353,7 +380,7 @@ class _CarDetailPageState extends State<CarDetailPage> {
                                               SizedBox(height: 10,),
                                               Text("Advance",style: TextStyle(fontSize: 11,color: Colors.grey[700]),),
                                               SizedBox(height: 3,),
-                                              Text("Auto Parking",style: TextStyle(fontSize: 13,fontWeight: FontWeight.w900),)
+                                              Text("${widget.car.features}",style: TextStyle(fontSize: 13,fontWeight: FontWeight.w900),)
                                             ],),
                                           ),
                                         ),
@@ -372,7 +399,7 @@ class _CarDetailPageState extends State<CarDetailPage> {
                                 ),
                                 InkWell(
                                   onTap: () {
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => ReviewPage(review: review,)));
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => ReviewPage(car: widget.car,)));
                                   },
                                   child: Padding(
                                     padding: const EdgeInsets.only(right: 20),
@@ -382,55 +409,65 @@ class _CarDetailPageState extends State<CarDetailPage> {
                               ],
                             ),
                             SizedBox(height: 20,),
-                            Container(
-                              height: 95,
-                              width: double.infinity,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: 2,
-                                itemBuilder: (context,index){
-                                  return Padding(
-                                    padding: const EdgeInsets.only(left: 20,),
-                                    child: Container(
-                                      height: 100,
-                                      width: 220,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(color: Colors.grey.shade500)
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            Padding(
+                              padding: const EdgeInsets.only(left: 20.0),
+                              child: Container(
+                                height: 90,
+                                width: double.infinity,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: widget.car.reviews.length,
+                                  itemBuilder: (context,index){
+                                    final reviews = widget.car.reviews[index];
+                                    return Padding(
+                                      padding: const EdgeInsets.only(left: 0,),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            height: 100,
+                                            width: 220,
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(10),
+                                              border: Border.all(color: Colors.grey.shade400)
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
                                                   Row(
-                                                    children: [
-                                                      Image.asset("${review[index]['image']}",height: 30,),
-                                                      SizedBox(width: 7),
-                                                      Text("${review[index]['name']}",style: TextStyle(fontSize: 13,fontWeight: FontWeight.w900),)
-                                                    ],
-                                                  ),
-                                                  Row(
-                                                    children: [
-                                                      Text("${review[index]['rate']}"),
-                                                      SizedBox(width: 5,),
-                                                      Image.asset("images/icon-logo/Icons (1).png",height: 10,)
-                                                    ],
-                                                  ),
-                                              
+                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      children: [
+                                                        Row(
+                                                          children: [
+                                                            Image.asset("${reviews.Image}",height: 30,),
+                                                            SizedBox(width: 7),
+                                                            Text("${reviews.Name}",style: TextStyle(fontSize: 13,fontWeight: FontWeight.w900),)
+                                                          ],
+                                                        ),
+                                                        Row(
+                                                          children: [
+                                                            Text("${reviews.rate}"),
+                                                            SizedBox(width: 5,),
+                                                            Image.asset("images/icon-logo/Icons (1).png",height: 10,)
+                                                          ],
+                                                        ),
+                                                    
+                                                      ],
+                                                    ),
+                                                    
+                                                  SizedBox(height: 10,),
+                                                  Text("${reviews.detail}",style: TextStyle(fontSize: 11),maxLines: 2,)
                                                 ],
                                               ),
-                                            SizedBox(height: 10,),
-                                            Text("${review[index]['detail']}",style: TextStyle(fontSize: 12),maxLines: 2,)
-                                          ],
-                                        ),
+                                            ),
+                                          ),
+                                          SizedBox(width: 20,)
+                                        ],
                                       ),
-                                    ),
-                                  );
-                              }),
+                                    );
+                                }),
+                              ),
                             ),
                             SizedBox(height: 25,),
                             Padding(
