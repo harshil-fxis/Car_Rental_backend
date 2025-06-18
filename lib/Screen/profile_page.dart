@@ -1,8 +1,13 @@
+import 'package:car_rental/Screen/global_state.dart';
 import 'package:car_rental/Screen/home_page.dart';
+import 'package:car_rental/Screen/login_page.dart';
 import 'package:car_rental/Screen/notification_page.dart';
 import 'package:car_rental/Screen/partner_onboding.dart';
 import 'package:car_rental/Screen/profile_edit_page.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -12,6 +17,32 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  late String userName;
+  late String userEmail;
+
+Future<void> pickAndUploadImage(String userId) async{
+  final ImagePicker picker = ImagePicker();
+  final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+  if (image == null) return;
+
+  var request = http.MultipartRequest('POST',Uri.parse("${ApiConfig.baseUrl}/profilePic"));
+  request.fields['id'] = AppState.userId.value!;
+  request.files.add(await http.MultipartFile.fromPath('profilePic', image.path));
+
+  var response = await request.send();
+  if (response.statusCode == 200){
+    final filename = image.path.split('/').last;
+    setState(() {
+      AppState.profilePic.value = filename;
+    });
+    print("Image upload successfully");
+  }else{
+    print("Image upload failed");
+  }
+}
+
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -38,7 +69,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
         body: SingleChildScrollView(
           child: Container(
-            height: 830,
+            height: 860,
             color: Colors.grey[100],
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,29 +88,55 @@ class _ProfilePageState extends State<ProfilePage> {
                         children: [
                           Stack(
                             children: [
-                              Image.asset("images/icon-logo/user img.png"),
-                              Positioned(
-                                right: 2,
-                                bottom: 1,
-                                child: Container(
-                                  child: Image.asset("images/icon-logo/Camera.png"),
+                              AppState.profilePic.value != null ? Container(
+                                height: 100,
+                                width: 100,
+                                child: CircleAvatar(
+                                  radius: 80,
+                                  backgroundImage: NetworkImage("${ApiConfig.baseUrl}/uploads/${AppState.profilePic.value}"),
+                                ),
+                              )
+                              : Container(
+                                height: 100,
+                                width: 100,
+                                child: CircleAvatar(
+                                  radius: 80,
+                                  backgroundColor: Colors.white,
+                                  child: Icon(Icons.person,size: 50,),
                                 ),
                               ),
+                              Positioned(
+                                right: 0,
+                                bottom: 2,
+                                child: InkWell(
+                                  onTap: () => pickAndUploadImage(AppState.userId.value!),
+                                  child: Container(
+                                    child: Image.asset("images/icon-logo/Camera.png"),
+                                  ),
+                                )
+                              )
                             ],
                           ),
                           SizedBox(width: 7,),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Benjsmin Jack",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
-                              Text("benjaminJack@gmail.com",style: TextStyle(fontSize: 12,color: Colors.grey),)
+                              Text("${AppState.userName.value}",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
+                              Text("${AppState.userEmail.value}",style: TextStyle(fontSize: 12,color: Colors.grey),)
                             ],
                           ),
                         ],
                       ),
                       InkWell(
-                        onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileEditPage()));
+                        onTap: () async{
+                          bool? isUpdated = await Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileEditPage()));
+                        
+                          if(isUpdated == true){
+                            setState(() {
+                              userName = AppState.userName.value!;
+                              userEmail = AppState.userEmail.value!;
+                            });
+                          }
                         },
                         child: Row(
                           children: [
@@ -314,12 +371,17 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Image.asset("images/icon-logo/Icon (12).png"),
-                          SizedBox(width: 10,),
-                          Text("Log Out",style: TextStyle(fontWeight: FontWeight.w500),)
-                        ],
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+                        },
+                        child: Row(
+                          children: [
+                            Image.asset("images/icon-logo/Icon (12).png"),
+                            SizedBox(width: 10,),
+                            Text("Log Out",style: TextStyle(fontWeight: FontWeight.w500),)
+                          ],
+                        ),
                       ),
                       Row(
                         children: [

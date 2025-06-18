@@ -15,6 +15,8 @@ class ProfileEditPage extends StatefulWidget {
 
 class _ProfileEditPageState extends State<ProfileEditPage> {
 
+  late String userName;
+  late String userEmail;
   TextEditingController nameController = TextEditingController();
   TextEditingController surnameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
@@ -49,7 +51,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       if(response.statusCode == 200){
         // final data = json.decode(response.body);
         showmessage("Profile Edites Successfully !");
-        Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage()));
+        setState(() {
+          userName = AppState.userName.value!;
+          userEmail = AppState.userEmail.value!;
+          Navigator.pop(context,true);
+        });
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage()));
       }else{
         showmessage("Please enter valid email and password !");
         print("error");
@@ -106,10 +113,27 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                           children: [
                             Stack(
                               children: [
-                                Image.asset("images/icon-logo/user img.png"),
+                                AppState.profilePic.value != null ? Container(
+                                height: 83,
+                                width: 80,
+                                child: CircleAvatar(
+                                  radius: 80,
+                                  backgroundImage: NetworkImage("${ApiConfig.baseUrl}/uploads/${AppState.profilePic.value}"),
+                                ),
+                              )
+                              : Container(
+                                height: 83,
+                                width: 80,
+                                child: CircleAvatar(
+                                  radius: 80,
+                                  backgroundColor: Colors.white,
+                                  child: Icon(Icons.person,size: 50,),
+                                ),
+                              ),
+                                // Image.asset("images/icon-logo/user img.png"),
                                 Positioned(
                                   right: 0,
-                                  bottom: 2,
+                                  bottom: 1,
                                   child: Container(
                                     child: Image.asset("images/icon-logo/Camera (1).png"),
                                   )
@@ -117,7 +141,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                               ],
                             ),
                             SizedBox(height: 15,),
-                            Text("Benjsmin Jack",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
+                            Text("${AppState.userName.value}",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),),
                           ],
                         ),
                       ],
@@ -131,7 +155,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                       child: TextField(
                         controller: nameController,
                         decoration: InputDecoration(
-                          hintText: "Benjamin",
+                          hintText: "${AppState.userName.value?.split(" ").first}",
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
@@ -149,7 +173,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                       child: TextField(
                         controller: surnameController,
                         decoration: InputDecoration(
-                          hintText: "Jack",
+                          hintText: "${AppState.userName.value?.split(" ").last}",
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
@@ -167,7 +191,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                       child: TextField(
                         controller: emailController,
                         decoration: InputDecoration(
-                          hintText: "benjaminJack@gmail.com",
+                          hintText: "${AppState.userEmail.value}",
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
@@ -183,6 +207,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                     child: SizedBox(
                       height: 50,
                       child: TextField(
+                        keyboardType: TextInputType.number,
                         controller: phoneController,
                         decoration: InputDecoration(
                           hintText: "+100******00",

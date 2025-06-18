@@ -1,8 +1,10 @@
-import 'dart:ffi';
+// import 'dart:ffi';
+import 'dart:convert';
 import 'dart:math';
 import 'package:car_rental/Controller/car_list_controller.dart';
 import 'package:car_rental/Model/car_brand_model.dart';
 import 'package:car_rental/Model/car_model.dart';
+import 'package:car_rental/Model/owner_and_car_model.dart';
 import 'package:car_rental/Screen/bottom_navbar_page.dart';
 import 'package:car_rental/Screen/car_detail_page.dart';
 import 'package:car_rental/Screen/filter_page.dart';
@@ -11,6 +13,7 @@ import 'package:car_rental/Screen/home_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:http/http.dart' as http;
 
 class SearchPage extends StatefulWidget {
   final int? minPrice;
@@ -28,16 +31,23 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   String selectedCountry = '';
   String selectedBrand = 'ALL';
-  List<Car> filteredCars = [];
+  // List<Car> filteredCars = [];
+  List<Cars> filteredCars = [];
   late String selectedCountri;
   late List<CarBrand> brandList = [];
   TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  List<OwnerAndCarModel> ownerAndCarModel = [];
+  final List<Cars> filtered = [];
+
 
 
   @override
   void initState(){
     super.initState();
+    getData();
+    // getFilteredCars();
+    // fetchOwnerAndCars();
     // fiteredCars = cars;
 
     selectedCountri = AppState.selectedCountri.value ?? '';
@@ -47,66 +57,109 @@ class _SearchPageState extends State<SearchPage> {
       setState(() {
        _searchQuery = _searchController.text.trim().toLowerCase();
        _updateFilteredCars();
+
     });
     });
   }
 
   void _updateFilteredCars(){
+
+    List<Cars> allCars = [];
+    for(var owner in ownerAndCarModel){
+      if(owner.cars != null && owner.cars!.isNotEmpty){
+        allCars.addAll(owner.cars!);
+      }
+    }
+
     if(selectedBrand == 'ALL'){
-      filteredCars = brandList.expand((brand) => brand.cars).toList();
-    }
-    else{
-      final selected = brandList.firstWhere((brand) => brand.nameBrand == selectedBrand,
-      orElse: () => CarBrand(nameBrand: '', imageBrand: '', cars: []),
-      );
-      filteredCars = selected.cars;
+      filteredCars = allCars;
+    }else{
+      allCars = allCars.where((car) =>car.brandName != null && car.brandName == selectedBrand).toList();
     }
 
-
-    if (widget.minPrice != null && widget.maxPrice != null){
-      filteredCars = filteredCars.where((car) => car.price >= widget.minPrice! && car.price <= widget.maxPrice!).toList();
+    if(widget.minPrice != null && widget.maxPrice != null){
+      
+      filteredCars = allCars.where((car) => car.price! >= widget.minPrice! && car.price! <= widget.maxPrice!).toList();
     }
 
-    if (widget.selectedColor != null){
-      filteredCars = filteredCars.where((car) => car.carColor == widget.selectedColor!).toList();
+    if(widget.selectedColor != null && widget.selectedColor!.isNotEmpty){
+      filteredCars = allCars.where((car) =>car.color != null && car.color!.toLowerCase() == widget.selectedColor!.toLowerCase()).toList();
+    }
+    print("color : ${widget.selectedColor}");
+    print("seats : ${widget.siting}");
+    print("length : ${allCars.length}");
+    
+
+    if(widget.siting != null){
+      filteredCars = allCars.where((car) => car.seats == widget.siting).toList();
     }
 
-    if (widget.siting != null){
-      filteredCars = filteredCars.where((car) => car.seats == widget.siting!).toList();
+    if(widget.fuel != null){
+      filteredCars = allCars.where((car) => car.fuel == widget.fuel).toList();
     }
 
-    if (widget.fuel != null){
-      filteredCars = filteredCars.where((car) => car.Fuel == widget.fuel!).toList();
+    if(_searchQuery.isEmpty){
+      filteredCars = filteredCars.where((car) => car.carName!.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
     }
 
-    if (_searchQuery.isNotEmpty){
-      filteredCars = filteredCars.where((car) => car.name.toLowerCase().contains(_searchQuery)).toList();
-    }
-
-    // if(widget.selectedColor != null){
-    //   filteredCars = filteredCars.where((car){
-    //     return car.carColor == widget.selectedColor!;
-    //     print('name: ${widget.selectedColor}');
-    //   }).toList();
-    // }
     filteredCars.shuffle(Random());
     setState(() {});
+
+    // if(selectedBrand == 'ALL'){
+    //   filteredCars = brandList.expand((brand) => brand.cars).toList();
+    // }
+    // else{
+    //   final selected = brandList.firstWhere((brand) => brand.nameBrand == selectedBrand,
+    //   orElse: () => CarBrand(nameBrand: '', imageBrand: '', cars: []),
+    //   );
+    //   filteredCars = selected.cars;
+    // }
+
+
+    // if (widget.minPrice != null && widget.maxPrice != null){
+    //   filteredCars = filteredCars.where((car) => car.price >= widget.minPrice! && car.price <= widget.maxPrice!).toList();
+    // }
+
+    // if (widget.selectedColor != null){
+    //   filteredCars = filteredCars.where((car) => car.carColor == widget.selectedColor!).toList();
+    // }
+
+    // if (widget.siting != null){
+    //   filteredCars = filteredCars.where((car) => car.seats == widget.siting!).toList();
+    // }
+
+    // if (widget.fuel != null){
+    //   filteredCars = filteredCars.where((car) => car.Fuel == widget.fuel!).toList();
+    // }
+
+    // if (_searchQuery.isNotEmpty){
+    //   filteredCars = filteredCars.where((car) => car.name.toLowerCase().contains(_searchQuery)).toList();
+    // }
+
+    // // if(widget.selectedColor != null){
+    // //   filteredCars = filteredCars.where((car){
+    // //     return car.carColor == widget.selectedColor!;
+    // //     print('name: ${widget.selectedColor}');
+    // //   }).toList();
+    // // }
+    // filteredCars.shuffle(Random());
+    // setState(() {});
   }
 
-  List<Car> allCars = [];
+  // List<Car> allCars = [];
   List<Car> displayedCars = [];
   
-  void _applyFilters(Map filters) {
-    List<Car> filterd = allCars.where((car){
-      bool matchesPrice = car.price >= filters['price'].start && car.price <= filters['price'].end;
+  // void _applyFilters(Map filters) {
+  //   List<Car> filterd = allCars.where((car){
+  //     bool matchesPrice = car.price >= filters['price'].start && car.price <= filters['price'].end;
 
-      return matchesPrice;
-    }).toList();
+  //     return matchesPrice;
+  //   }).toList();
 
-    setState(() {
-      displayedCars = filterd;
-    });
-  }
+  //   setState(() {
+  //     displayedCars = filterd;
+  //   });
+  // }
 
 
 
@@ -166,8 +219,6 @@ class _SearchPageState extends State<SearchPage> {
   //     }).toList();
   //   });
   // }
-
-
   final List<Map<String, dynamic>> PopCar = [
     {
       "image": "images/cars/white-ferrari-ff-car 1.png",
@@ -184,19 +235,89 @@ class _SearchPageState extends State<SearchPage> {
       "price": 100
     },
   ];
+
+  List<Map<String, String>> get brandWithAll {
+      final List<Map<String, String>> brands = [
+        {
+          'name': 'ALL',
+          'image': 'images/icon-logo/Icon (4).png',
+        }
+      ];
+      
+      final brandSet = <String>{};
+
+      for (var owner in ownerAndCarModel) {
+        for (var car in owner.cars!) {
+          if (brandSet.add(car.brandName!)) {
+            brands.add({
+              'name': car.brandName!,
+              'image': 'images/carLogo/${car.brandName?.toLowerCase()}.png',
+            });
+          }
+        }
+      }
+
+      return brands;
+    }
+
+    List<Cars> getFilteredCars(){
+
+      for (var owner in ownerAndCarModel){
+        for( var car in owner.cars!){
+          if(selectedBrand == 'ALL' || car.brandName == selectedBrand){
+            filtered.add(car);
+          }
+        }
+      }
+
+    //   if (widget.minPrice != null && widget.maxPrice != null){
+    //   filtered = filtered.where((car) => car.price! >= widget.minPrice! && car.price! <= widget.maxPrice!).toList();
+    // }
+
+    // if (widget.selectedColor != null){
+    //   filtered = filtered.where((car) => car.color == widget.selectedColor!).toList();
+    // }
+
+    // if (widget.siting != null){
+    //   filtered = filtered.where((car) => car.seats == widget.siting!).toList();
+    // }
+
+    // if (widget.fuel != null){
+    //   filtered = filtered.where((car) => car.fuel == widget.fuel!).toList();
+    // }
+
+
+
+      return filtered;
+    }
   @override
   Widget build(BuildContext context) {
-     final List<Map<String, String>> brandWithAll = [
-      {
-        'name' : 'ALL',
-        'image' : 'images/icon-logo/Icon (4).png',
-      },
-      ...brandList.map((brand) => {
-        'name' : brand.nameBrand,
-        'image' : brand.imageBrand,
-      }),
-    ];
+    //  final List<Map<String, String>> brandWithAll = [
+    //   {
+    //     'name' : 'ALL',
+    //     'image' : 'images/icon-logo/Icon (4).png',
+    //   },
+    //   ...brandList.map((brand) => {
+    //     'name' : brand.nameBrand,
+    //     'image' : brand.imageBrand,
+    //   }),
+    // ];
+    // final Set<String> uniqueBrands = ownerAndCarModel
+    //   .map((car) => car.brandName ?? '')
+    //   .toSet();
 
+    // final List<Map<String, String>> brandWithAll = [
+    //   {
+    //     'name' : 'ALL',
+    //     'image' : 'images/icon-logo/Icon (4).png',
+    //   },
+    //   ...uniqueBrands.map((brand) => {
+    //     'name' : brand ?? '',
+    //     'image' : 'images/carLogo/${(brand ?? '').toLowerCase()}.png'
+    //   }).toSet(),
+    // ];
+
+    
     return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -281,6 +402,7 @@ class _SearchPageState extends State<SearchPage> {
                                 setState(() {
                                   currentCategoryIndex = index;
                                   selectedBrand = brand['name']!;
+                                  // getFilteredCars();
                                   _updateFilteredCars();
                                   });
                               },
@@ -378,9 +500,11 @@ class _SearchPageState extends State<SearchPage> {
                         itemCount: filteredCars.length,
                         itemBuilder: (context, index) {
                           final car = filteredCars[index];
+                          print("filtered: ${filtered.length}");
+                          // final owner = ownerAndCarModel;
                            return InkWell(
                             onTap: (){
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => CarDetailPage(car: car,)));
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => CarDetailPage(car: car)));
                             },
                              child: Container(
                                 decoration: BoxDecoration(
@@ -407,8 +531,8 @@ class _SearchPageState extends State<SearchPage> {
                                                 right: 0,
                                                 top: 0,
                                                 bottom: 0),
-                                            child: Image.asset(
-                                              '${car.image[0]}',
+                                            child: Image.network(
+                                              '${ApiConfig.baseUrl}/uploads/${car.imageUrls![0]}',
                                               height: 65,
                                               fit: BoxFit.fill,
                                             ),
@@ -433,7 +557,7 @@ class _SearchPageState extends State<SearchPage> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            "${car.name}",
+                                            "${car.carName}",
                                             style: TextStyle(
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.w900),
@@ -443,10 +567,10 @@ class _SearchPageState extends State<SearchPage> {
                                           ),
                                           Row(
                                             children: [
-                                              Text(
-                                                "${car.rating}",
-                                                style: TextStyle(fontSize: 12),
-                                              ),
+                                              // Text(
+                                              //   // "${car.rating}",
+                                              //   style: TextStyle(fontSize: 12),
+                                              // ),
                                               SizedBox(
                                                 width: 5,
                                               ),
@@ -585,5 +709,57 @@ class _SearchPageState extends State<SearchPage> {
           ),
         ),
     );
+  }
+  // Future<void> fetchOwnerAndCars() async{
+  //   final Response = await http.get(Uri.parse("${ApiConfig.baseUrl}/allowner"));
+  //   if(Response.statusCode == 200){
+  //     final List<dynamic> data = jsonDecode(Response.body);
+  //     List<OwnerAndCarModel> owners = data
+  //       .map((Item) => OwnerAndCarModel.fromJson(Item))
+  //       .toList();
+
+  //     Set<String> brands = {};
+
+  //     for(var owner in owners){
+  //       for(var car in owner.cars ?? []){
+  //         if(car.brandName != null){
+  //           brands.add(car.brandName!);
+  //         }
+  //       }
+  //     }
+  //     setState(() {
+  //       uniqueBrands = brands.toList();
+  //     });
+
+  //   }else{
+  //     throw Exception('Failed to load owner and cars');
+  //   }
+  // }
+
+  Future<void> getData() async{
+    final responce = await http.get(Uri.parse('${ApiConfig.baseUrl}/allowner'));
+
+    if(responce.statusCode == 200){
+      final List<OwnerAndCarModel> loaded = [];
+      final List<dynamic> data = jsonDecode(responce.body.toString());
+
+      // ownerAndCarModel.clear();
+      for( var item in data){
+        OwnerAndCarModel owner = OwnerAndCarModel.fromJson(item);
+        if(owner.cars!.isNotEmpty){
+          loaded.add(owner);
+        }
+      }
+      // for(Map<String,dynamic> index in data){
+      //   ownerAndCarModel.add(Cars.fromJson(index));
+      // }
+      setState(() {
+        ownerAndCarModel = loaded;
+        _updateFilteredCars();
+      });
+      // return ownerAndCarModel;
+    }else{
+      print("Eroor: ");
+    }
   }
 }

@@ -65,10 +65,13 @@ class _VerifyPhonePageState extends State<VerifyPhonePage> {
   //   });
   // }
 
-  
+  bool isLoading = false;
   final userId = AppState.userId.value;
   TextEditingController phoneController = TextEditingController();
   Future<void> sendOTP() async{
+    setState(() {
+      isLoading = true;
+    });
     try{
       final response = await http.post(Uri.parse("${ApiConfig.baseUrl}/phone"),
         headers: {
@@ -78,6 +81,7 @@ class _VerifyPhonePageState extends State<VerifyPhonePage> {
           {
             'id': userId.toString(),
             'phone': phoneController.text.trim(),
+            'countryverify': selectedCountri
           }
         ),
       );
@@ -107,126 +111,129 @@ class _VerifyPhonePageState extends State<VerifyPhonePage> {
     final countryList = countryFlags.keys.toList();
 
     return Scaffold(
-      body: Container(
-        color: Colors.grey[50],
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Container(
-              width: double.infinity,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 60,left: 20),
-                    child: Image.asset("images/icon-logo/Logo.png",height: 30,),
-                  )
-                ],
+      body: Center(
+        child: isLoading ? CircularProgressIndicator()
+        : Container(
+          color: Colors.grey[50],
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                width: double.infinity,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 60,left: 20),
+                      child: Image.asset("images/icon-logo/Logo.png",height: 30,),
+                    )
+                  ],
+                ),
               ),
-            ),
-            Container(
-              width: double.infinity,
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 20,right: 20),
-                    child: Text("Verify your phone number",style: TextStyle(fontSize: 28,fontWeight: FontWeight.bold),),
-                  ),
-                  SizedBox(height: 10,),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 20,right: 20),
-                    child: Text("We have you an SMS with a code to number.",textAlign: TextAlign.center,style: TextStyle(fontSize: 12,color: Colors.grey[500],fontWeight: FontWeight.bold)),
-                  ),
-                  SizedBox(height: 35,),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 20,right: 20),
-                    child: Container(
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(),
-                        borderRadius: BorderRadius.circular(10)
-                      ),
-                      width: double.infinity,
+              Container(
+                width: double.infinity,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20,right: 20),
+                      child: Text("Verify your phone number",style: TextStyle(fontSize: 28,fontWeight: FontWeight.bold),),
+                    ),
+                    SizedBox(height: 10,),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20,right: 20),
+                      child: Text("We have you an SMS with a code to number.",textAlign: TextAlign.center,style: TextStyle(fontSize: 12,color: Colors.grey[500],fontWeight: FontWeight.bold)),
+                    ),
+                    SizedBox(height: 35,),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20,right: 20),
                       child: Container(
-                        width: 300,
-                        child: DropdownButton<String>(
-                          hint: Text("Select Country"),
-                          value: selectedCountri,
-                          icon: Image.asset("images/icon-logo/Group 568.png",height: 15,),
-                          onChanged: (value) {
-                            setState(() {
-                              selectedCountri = value!;
-                              AppState.selectedCountri.value = value;
-                              AppState.flagUrl.value = countryFlags[value]!;
-                              print("selected Country: $value");
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(),
+                          borderRadius: BorderRadius.circular(10)
+                        ),
+                        width: double.infinity,
+                        child: Container(
+                          width: 300,
+                          child: DropdownButton<String>(
+                            hint: Text("Select Country"),
+                            value: selectedCountri,
+                            icon: Image.asset("images/icon-logo/Group 568.png",height: 15,),
+                            onChanged: (value) {
+                              setState(() {
+                                selectedCountri = value!;
+                                AppState.selectedCountri.value = value;
+                                AppState.flagUrl.value = countryFlags[value]!;
+                                print("selected Country: $value");
+                              }
+                              );
+                            },
+                            items: countryList.map((country) {
+                              final flag = countryFlags[country]!;
+                              return DropdownMenuItem<String>(
+                                value: country,
+                                child: Row(
+                                  children: [
+                                    Image.asset(
+                                      flag,
+                                      width: 24,
+                                      height: 16,
+                                      fit: BoxFit.cover,
+                                    ),
+                                    SizedBox(width: 40),
+                                    Text(country),
+                                    SizedBox(width: 120),
+                                  ],
+                                ),
+                              );
                             }
-                            );
-                          },
-                          items: countryList.map((country) {
-                            final flag = countryFlags[country]!;
-                            return DropdownMenuItem<String>(
-                              value: country,
-                              child: Row(
-                                children: [
-                                  Image.asset(
-                                    flag,
-                                    width: 24,
-                                    height: 16,
-                                    fit: BoxFit.cover,
-                                  ),
-                                  SizedBox(width: 40),
-                                  Text(country),
-                                  SizedBox(width: 120),
-                                ],
-                              ),
-                            );
-                          }
-                          ).toList(),
+                            ).toList(),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 20,),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 20,right: 20),
-                    child: SizedBox(
-                      height: 45,
-                      child: TextField(
-                        controller: phoneController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          hintText: "  Phone Number",
-                          hintStyle: TextStyle(fontSize: 14,color: Colors.grey),
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10)
-                            )
+                    SizedBox(height: 20,),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20,right: 20),
+                      child: SizedBox(
+                        height: 45,
+                        child: TextField(
+                          controller: phoneController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            hintText: "  Phone Number",
+                            hintStyle: TextStyle(fontSize: 14,color: Colors.grey),
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10)
+                              )
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 30,),
-                  InkWell(
-                    onTap: sendOTP,
-                    child: Container(
-                      width: double.infinity,
-                      height: 50,
-                      margin: EdgeInsets.only(left: 20,right: 20),
-                      padding: EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[900],
-                        borderRadius: BorderRadius.circular(30)
+                    SizedBox(height: 30,),
+                    InkWell(
+                      onTap: sendOTP,
+                      child: Container(
+                        width: double.infinity,
+                        height: 50,
+                        margin: EdgeInsets.only(left: 20,right: 20),
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[900],
+                          borderRadius: BorderRadius.circular(30)
+                        ),
+                        child: Center(child: Text("Continue",style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold,color: Colors.white),)),
                       ),
-                      child: Center(child: Text("Continue",style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold,color: Colors.white),)),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Container(),
-          ],
+              Container(),
+            ],
+          ),
         ),
       ),
     );

@@ -1,9 +1,10 @@
 // import 'dart:nativewrappers/_internal/vm/lib/core_patch.dart';
+import 'dart:convert';
 import 'dart:math';
-
 import 'package:car_rental/Controller/car_list_controller.dart';
 import 'package:car_rental/Model/car_brand_model.dart';
 import 'package:car_rental/Model/car_model.dart';
+import 'package:car_rental/Model/owner_and_car_model.dart';
 import 'package:car_rental/Screen/global_state.dart';
 import 'package:car_rental/Screen/car_detail_page.dart';
 import 'package:car_rental/Screen/filter_page.dart';
@@ -12,6 +13,9 @@ import 'package:car_rental/Screen/profile_page.dart';
 import 'package:car_rental/Screen/search_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
+
 
 class HomePage extends StatefulWidget {
   // final VoidCallback onSearchTap;
@@ -26,10 +30,14 @@ class _HomePageState extends State<HomePage> {
   late String selectedCountri;
   late List<CarBrand> brandList;
   List<Car> sortedCars = [];
+  List<String> uniqueBrands = [];
+  late Future<OwnerAndCarModel> ownerFuture;
 
   @override
   void initState(){
     super.initState();
+    fetchOwnerAndCars();
+
     selectedCountri = AppState.selectedCountri.value ?? '';
     brandList = carDataByCountry[selectedCountri] ?? [];
 
@@ -83,7 +91,24 @@ class _HomePageState extends State<HomePage> {
                       // onTap: () {
                       //   Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage()));
                       // },
-                      child: Image.asset("images/icon-logo/Group 164.png")),
+                      child: AppState.profilePic.value != null ? Container(
+                        height: 40,
+                        width: 40,
+                        child: CircleAvatar(
+                          radius: 80,
+                            backgroundImage: NetworkImage("${ApiConfig.baseUrl}/uploads/${AppState.profilePic.value}"),
+                          ),
+                        )
+                        : Container(
+                          height: 40,
+                          width: 40,
+                          child: CircleAvatar(
+                            radius: 80,
+                            backgroundColor: Colors.white,
+                            child: Icon(Icons.person,size: 25,),
+                          ),
+                        ),
+                    )
                   ],
                 ),
               ],
@@ -144,32 +169,54 @@ class _HomePageState extends State<HomePage> {
                 SizedBox(height: 10,),
                   Container(
                     height: 100,
-                    child: ListView.builder(
-                      scrollDirection:  Axis.horizontal,
-                      itemCount: brandList.length,
-                      itemBuilder: (context,index){
-                        final brand = brandList[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 20,left: 20),
-                          child: Container(
-                            child: Column(
-                              children: [
-                                Container(
-                                  height: 65,
-                                  width: 65,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black,
-                                    borderRadius: BorderRadius.circular(40)
-                                  ),
-                                  child: Center(child: Image.asset(brand.imageBrand,height: 40,width: 40,))),
-                                SizedBox(height: 7,),
-                                Text(brand.nameBrand,style: TextStyle(fontSize: 12),),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                    // child: FutureBuilder<OwnerAndCarModel>(
+                    //   future: ownerFuture,
+                    //   builder: (context, snapshot) {
+                        // if(snapshot.connectionState == ConnectionState.waiting){
+                        //   return Center(child: CircularProgressIndicator());
+                        // }else if(snapshot.hasError){
+                        //   return Center(child: Text("ERROR: ${snapshot.error}"),);
+                        // }else if(!snapshot.hasData || snapshot.data == null){
+                        //   return Center(child: Text(" no data found"),);
+                        // }else if(snapshot.data!.cars == null || snapshot.data!.cars!.isEmpty){
+                        //   return Center(child: Text("No cars available"),);
+                        // }
+                        //   final cars = snapshot.data!.cars ?? [];
+
+                        //   final brandName = cars
+                        //     .map((car) => car.brandName ?? "")
+                        //     .toSet()
+                        //     .toList();
+                        
+                        child: ListView.builder(
+                          scrollDirection:  Axis.horizontal,
+                          itemCount: uniqueBrands.length,
+                          itemBuilder: (context,index){
+                            final brands = uniqueBrands[index];
+                            final brand = brandList[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 20,left: 20),
+                              child: Container(
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      height: 65,
+                                      width: 65,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black,
+                                        borderRadius: BorderRadius.circular(40)
+                                      ),
+                                      child: Center(child: Image.asset("images/carLogo/${brands.toLowerCase()}.png",height: 40,width: 40,))),
+                                    SizedBox(height: 7,),
+                                    Text(brands,style: TextStyle(fontSize: 12),),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                    //     }
+                    // ),
                 ),
                 Expanded(
                   child: Container(
@@ -212,7 +259,7 @@ class _HomePageState extends State<HomePage> {
                                   padding: const EdgeInsets.only(right: 20),
                                   child: InkWell(
                                     onTap: () {
-                                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => CarDetailPage(car: car,),fullscreenDialog: true,));
+                                      // Navigator.of(context).push(MaterialPageRoute(builder: (context) => CarDetailPage(car: cars,),fullscreenDialog: true,));
                                     },
                                     child: Container(
                                       height: 70,
@@ -353,5 +400,30 @@ class _HomePageState extends State<HomePage> {
         ),
 
     );
+  }
+
+  Future<void> fetchOwnerAndCars() async{
+    final Response = await http.get(Uri.parse("${ApiConfig.baseUrl}/allowner"));
+    if(Response.statusCode == 200){
+      final List<dynamic> data = jsonDecode(Response.body);
+      List<OwnerAndCarModel> owners = data
+        .map((Item) => OwnerAndCarModel.fromJson(Item))
+        .toList();
+
+      Set<String> brands = {};
+
+      for(var owner in owners){
+        for(var car in owner.cars ?? []){
+          if(car.brandName != null){
+            brands.add(car.brandName!);
+          }
+        }
+      }
+      setState(() {
+        uniqueBrands = brands.toList();
+      });
+    }else{
+      throw Exception('Failed to load owner and cars');
+    }
   }
 }

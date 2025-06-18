@@ -1,3 +1,16 @@
+buildscript {
+    ext.kotlin_version = '1.8.10'
+    repositories{
+        google()
+        mavenCentral()
+    }
+    dependencies{
+        classpath 'com.android.tools.build:gradle:8.0.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+
 allprojects {
     repositories {
         google()
@@ -11,6 +24,14 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(":app")
+
+    configurations.all {
+        resolutionStrategy {
+            force "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+            force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+            force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+        }
+    }
 }
 
 tasks.register("clean", Delete) {

@@ -6,7 +6,8 @@ import 'package:car_rental/Screen/verification_code_page.dart';
 import 'package:car_rental/Screen/verify_phone_page.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
