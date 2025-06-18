@@ -1,6 +1,8 @@
 import 'package:car_rental/Screen/home_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:car_rental/Screen/global_state.dart';
+import 'package:http/http.dart' as http;
 
 class PartnerPaymentReceiveMethodPage extends StatefulWidget {
   const PartnerPaymentReceiveMethodPage({super.key});
@@ -10,6 +12,14 @@ class PartnerPaymentReceiveMethodPage extends StatefulWidget {
 }
 
 class _PartnerPaymentReceiveMethodPageState extends State<PartnerPaymentReceiveMethodPage> {
+  bool isCardEnabled = false;
+
+  void toggleCardFields(){
+    setState(() {
+      isCardEnabled = !isCardEnabled;
+    });
+  }
+final ownerEmail = AppState.ownerEmail.value;
 
 
   showBottomSheet(BuildContext context){
@@ -127,14 +137,17 @@ class _PartnerPaymentReceiveMethodPageState extends State<PartnerPaymentReceiveM
                           ),
                           Row(
                             children: [
-                              Container(
-                                height: 30,
-                                width: 70,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade300,
-                                  borderRadius: BorderRadius.circular(10)
+                              InkWell(
+                                onTap: toggleCardFields,
+                                child: Container(
+                                  height: 30,
+                                  width: 70,
+                                  decoration: BoxDecoration(
+                                    color: isCardEnabled ? Colors.grey.shade300 : Colors.green.shade300,
+                                    borderRadius: BorderRadius.circular(10)
+                                  ),
+                                  child: Center(child: Text("DAFULT",style: TextStyle(color: Colors.grey.shade600),)),
                                 ),
-                                child: Center(child: Text("DAFULT",style: TextStyle(color: Colors.grey.shade600),)),
                               ),
                               SizedBox(width: 10,)
                             ],
@@ -156,7 +169,7 @@ class _PartnerPaymentReceiveMethodPageState extends State<PartnerPaymentReceiveM
                     height: 45,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isCardEnabled ? Colors.white : Colors.grey[70],
                       border: Border.all(color: Colors.grey.shade300),
                       borderRadius: BorderRadius.circular(10)
                     ),
@@ -166,6 +179,8 @@ class _PartnerPaymentReceiveMethodPageState extends State<PartnerPaymentReceiveM
                         height: 45,
                         width: double.infinity,
                         child: TextField(
+                          controller: cardNameController,
+                          enabled: isCardEnabled,
                           decoration: InputDecoration(
                             hintText: "Full Name",
                             hintStyle: TextStyle(fontSize: 15),
@@ -183,7 +198,7 @@ class _PartnerPaymentReceiveMethodPageState extends State<PartnerPaymentReceiveM
                     height: 45,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isCardEnabled ? Colors.white : Colors.grey[70],
                       border: Border.all(color: Colors.grey.shade300),
                       borderRadius: BorderRadius.circular(10)
                     ),
@@ -193,6 +208,8 @@ class _PartnerPaymentReceiveMethodPageState extends State<PartnerPaymentReceiveM
                         height: 45,
                         width: double.infinity,
                         child: TextField(
+                          controller: cardEmailController,
+                          enabled: isCardEnabled,
                           decoration: InputDecoration(
                             hintText: "Email Address",
                             hintStyle: TextStyle(fontSize: 15),
@@ -210,7 +227,7 @@ class _PartnerPaymentReceiveMethodPageState extends State<PartnerPaymentReceiveM
                     height: 45,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isCardEnabled ? Colors.white : Colors.grey[70],
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: Colors.grey.shade300)
                     ),
@@ -226,6 +243,8 @@ class _PartnerPaymentReceiveMethodPageState extends State<PartnerPaymentReceiveM
                                   height: 45,
                                   width: 200,
                                   child: TextField(
+                                    controller: cardNumberController,
+                                    enabled: isCardEnabled,
                                     keyboardType: TextInputType.number,
                                     decoration: InputDecoration(
                                       hintText: "Number",
@@ -260,7 +279,7 @@ class _PartnerPaymentReceiveMethodPageState extends State<PartnerPaymentReceiveM
                     height: 45,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isCardEnabled ? Colors.white : Colors.grey[70],
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: Colors.grey.shade300)
                     ),
@@ -277,7 +296,10 @@ class _PartnerPaymentReceiveMethodPageState extends State<PartnerPaymentReceiveM
                                   height: 45,
                                   width: 140,
                                   child: TextField(
-                                    keyboardType: TextInputType.number,
+                                    controller: expiryDateController,
+                                    readOnly: true,
+                                    enabled: isCardEnabled,
+                                    onTap: () => _selectExpiryDate(context),
                                     decoration: InputDecoration(
                                       hintText: "MM / YY",
                                       hintStyle: TextStyle(fontSize: 15),
@@ -290,17 +312,32 @@ class _PartnerPaymentReceiveMethodPageState extends State<PartnerPaymentReceiveM
                           ),
                           Text("|",style: TextStyle(fontSize: 30,fontWeight: FontWeight.w700,color: Colors.grey.shade300),),
                           SizedBox(width: 20,),
-                          Container(
-                            height: 45,
-                            width: 140,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text("CVC",style: TextStyle(fontSize: 15,color: Colors.grey.shade600,fontWeight: FontWeight.w700),),
-                                Image.asset("images/icon-logo/Group 425.png"),
-                              ],
-                            ),
-                          )
+                          SizedBox(
+                                  height: 45,
+                                  width: 140,
+                                  child: TextField(
+                                    controller: cvcController,
+                                    enabled: isCardEnabled,
+                                    keyboardType: TextInputType.number,
+                                    decoration: InputDecoration(
+                                      hintText: "CVC",
+                                      hintStyle: TextStyle(fontSize: 15),
+                                      border: InputBorder.none,
+                                      suffixIcon: Image.asset("images/icon-logo/Group 425.png")
+                                    ),
+                                  ),
+                                ),
+                          // Container(
+                          //   height: 45,
+                          //   width: 140,
+                          //   child: Row(
+                          //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          //     children: [
+                          //       Text("CVC",style: TextStyle(fontSize: 15,color: Colors.grey.shade600,fontWeight: FontWeight.w700),),
+                          //       Image.asset("images/icon-logo/Group 425.png"),
+                          //     ],
+                          //   ),
+                          // )
                         ],
                       ),
                     ),
@@ -328,6 +365,7 @@ class _PartnerPaymentReceiveMethodPageState extends State<PartnerPaymentReceiveM
                         height: 45,
                         width: double.infinity,
                         child: TextField(
+                          controller: countryController,
                           decoration: InputDecoration(
                             hintText: "United States",
                             suffixIcon: Image.asset("images/icon-logo/Vector (5).png"),
@@ -356,6 +394,7 @@ class _PartnerPaymentReceiveMethodPageState extends State<PartnerPaymentReceiveM
                         height: 45,
                         width: double.infinity,
                         child: TextField(
+                          controller: zipCodrController,
                           decoration: InputDecoration(
                             hintText: "Zip",
                             hintStyle: TextStyle(fontSize: 13),
@@ -448,9 +487,7 @@ class _PartnerPaymentReceiveMethodPageState extends State<PartnerPaymentReceiveM
                   Padding(
                     padding: const EdgeInsets.only(left: 20,right: 20),
                     child: InkWell(
-                      onTap: () {
-                        showBottomSheet(context);
-                      },
+                      onTap: submitCardInfo,
                       child: Container(
                         height: 50,
                         width: double.infinity,
@@ -469,5 +506,66 @@ class _PartnerPaymentReceiveMethodPageState extends State<PartnerPaymentReceiveM
       ),
       ),
     );
+  }
+
+  TextEditingController expiryDateController = TextEditingController();
+  TextEditingController cardNameController = TextEditingController();
+  TextEditingController cardEmailController = TextEditingController();
+  TextEditingController cardNumberController = TextEditingController();
+  TextEditingController cvcController = TextEditingController();
+  TextEditingController countryController = TextEditingController();
+  TextEditingController zipCodrController = TextEditingController();
+
+  Future<void> _selectExpiryDate(BuildContext context) async{
+    final now = DateTime.now();
+    final picker = await showDatePicker(
+      context: context, 
+      firstDate: DateTime(now.year), 
+      lastDate: DateTime(now.year + 20),
+      helpText:  'select expiry month and year',
+      fieldLabelText: 'Expiry date',
+      builder: (context, child){
+        return Theme(
+          data: ThemeData.light(), 
+          child: child!
+        );
+      }  
+    );
+    if(picker != null){
+      String formatted = '${picker.month.toString().padLeft(2, '0')}/${picker.year.toString().substring(2)}';
+      setState(() {
+        expiryDateController.text = formatted;
+      });
+    }
+  }
+
+
+  Future<void> submitCardInfo() async{
+    setState(() { });
+
+    final uri = Uri.parse('${ApiConfig.baseUrl}/card');
+    final response = await http.post(
+      uri,
+      body: {
+        "owner_email": ownerEmail,
+        "cash": isCardEnabled ? "" : "yes",
+        "card_name": isCardEnabled ? cardNameController.text.trim() : "",
+        "card_email": isCardEnabled ? cardEmailController.text.trim() : "",
+        "cardNo": isCardEnabled ? cardNumberController.text.trim() : "",
+        "expiryDate": isCardEnabled ? expiryDateController.text.trim() : "",
+        "cvc": isCardEnabled ? cvcController.text.trim() : "",
+        "country": isCardEnabled ? countryController.text.trim() : "",
+        "zipCode": int.tryParse(zipCodrController.text.trim())?.toString() ?? "",
+      }  
+    );
+    setState(() { });
+
+    if (response.statusCode == 200){
+      showBottomSheet(context);
+    }else{
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: ${response.body}")),
+      );
+    }
   }
 }

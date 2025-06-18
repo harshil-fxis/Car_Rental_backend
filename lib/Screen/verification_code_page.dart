@@ -1,6 +1,7 @@
 import 'package:car_rental/Controller/car_list_controller.dart';
 import 'package:car_rental/Screen/bottom_navbar_page.dart';
 import 'package:car_rental/Screen/home_page.dart';
+import 'package:car_rental/Screen/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -178,7 +179,7 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                   ),
                   InkWell(
                     onTap: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => BottomNavbarPage()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
                     },
                     child: Container(
                       width: double.infinity,

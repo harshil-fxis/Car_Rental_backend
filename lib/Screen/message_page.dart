@@ -57,7 +57,23 @@ class _MessagePageState extends State<MessagePage> {
                   }, 
                   child: Image.asset("images/icon-logo/Group 197.png",height: 40,)),
                   SizedBox(width: 10,),
-                  Image.asset("images/icon-logo/Group 164.png",height: 40,),
+                  AppState.profilePic.value != null ? Container(
+                    height: 40,
+                    width: 40,
+                    child: CircleAvatar(
+                      radius: 80,
+                      backgroundImage: NetworkImage("${ApiConfig.baseUrl}/uploads/${AppState.profilePic.value}"),
+                    ),
+                  )
+                  : Container(
+                    height: 40,
+                    width: 40,
+                      child: CircleAvatar(
+                        radius: 80,
+                        backgroundColor: Colors.white,
+                        child: Icon(Icons.person,size: 25,),
+                      ),
+                  ),
                   SizedBox(width: 10,),
                   Text("Chats",style: TextStyle(fontSize: 20,fontWeight: FontWeight.w900),),
                     ],
